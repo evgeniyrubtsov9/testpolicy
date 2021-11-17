@@ -1,2 +1,3 @@
-# testpolicy
-LUDF Kval. darbs
+# Project name: TestPolicy
+# Author: LUDF Jevgenijs Rubcovs
+# RIGA 2021
