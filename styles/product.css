@@ -1,0 +1,29 @@
+#productSetup {
+    cursor: pointer;
+    color: black;
+    line-height: 20px;
+}
+#productLogo {
+    height: 100px;
+    width: 100px;
+    display: none;
+}
+a {
+    cursor: pointer;
+}
+#product_documents {
+    font-weight: bold;
+}
+#product_documents:hover {
+    text-decoration: none;
+}
+#product_file_upload_msg {
+    display: none;
+}
+#premiumType{
+   position: absolute;
+   border-right: none;
+}
+.downloadFile {
+    display: none;
+}

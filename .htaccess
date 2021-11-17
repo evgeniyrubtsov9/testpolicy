@@ -1,0 +1,10 @@
+#### Description: Run website without filename extension ('.php') ####
+#### Return error 403 (Access forbidden), if original request contains .php ####
+
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php
+RewriteCond %{THE_REQUEST} "^[^ ]* .*?\.php[? ].*$"
+RewriteRule .* - [L,R=403]
+

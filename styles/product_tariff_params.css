@@ -1,0 +1,39 @@
+td > input {
+    width: 50px;
+    text-align: center;
+}
+#tableBMI  {
+    text-align: center;
+}
+#tableMaxAge > tbody > tr > td:last-child {
+    text-align: center;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button { /* remove arrows (down/up) for input type = number */
+  -webkit-appearance: none;
+  margin: 0;
+}
+.form-control {
+    width: 120px; 
+    display: inline;
+}
+td {
+    text-align: center;
+}
+tr:hover {
+    background-color: gold;
+}
+#productSetup {
+    cursor: pointer;
+    color: black;
+    line-height: 20px;
+}
+th {
+    text-align: center;
+}
+tbody {
+    border-style: dotted;
+}
+thead {
+    border-style: solid;
+}

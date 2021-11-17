@@ -1,0 +1,140 @@
+.container > nav{
+    margin-top: 20px;
+}
+.container-lg {
+    max-width: 99%;
+    padding-left: 15px;
+    margin-bottom: 50px;
+}
+#update {
+    display: none;
+}
+#formAddCustomer > p{
+    font-weight: bold;
+}
+#downloadLog {
+    display: flex;
+    justify-content:center;
+    padding-top: 5px;
+}
+#thAction {
+    width: 0px;
+    background-image: none;
+}
+#log {
+    background-color: lightgrey;
+    max-width: 1000px;
+    border: 1px solid black;
+    padding: 5px;
+    margin: 0 auto;
+    max-height: 1000px;
+    height: 700px;
+    overflow-y: scroll;
+}
+#log > p{
+    margin: 0;
+    padding: 0;
+}
+.custLabel{
+    cursor: pointer;
+}
+#listCustomers {
+    width: 100%; 
+    float:left; 
+    background:gray; 
+    margin:10px;
+  }
+body {
+    color: #404E67;
+    background: #F5F7FA;
+    font-family: 'Open Sans', sans-serif;
+}
+.table-title {
+    padding-bottom: 10px;
+    margin: 0px;
+    border: solid;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.table-title h2 {
+    margin: 6px 0 0;
+    font-size: 22px;
+}
+.table-title .add-new, #btnExportCustomersToXls{
+    float: right;
+    height: 30px;
+    font-size: 14px;
+    text-shadow: none;
+    min-width: 100px;
+    line-height: 13px;
+    color: black;
+}
+.col {
+    padding-right: 0;
+    padding-left: 0;
+}
+.table-title .add-new i, #btnExportCustomersToXls{
+    margin-right: 4px;
+    color: black;
+}
+table.table {
+   table-layout: auto;
+}
+table.table tr th, table.table tr td {
+    border-color: #e9e9e9;
+    border-radius: 5px;
+}
+table.table th i {
+    font-size: 13px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+table.table th:last-child {
+    width: 100px;
+}
+table.table td a {
+    cursor: pointer;
+    display: inline-block;
+    min-width: 24px;
+}    
+table.table td a.add {
+    color: #313a35;
+}
+table.table td a.edit {
+    color: #FFC107;
+}
+table.table td a.delete {
+    color: #E34724;
+}
+table.table td i {
+    font-size: 19px;
+}
+table.table td a.add i {
+    font-size: 24px;
+    margin-right: -1px;
+    position: relative;
+    top: 3px;
+}    
+table.table .form-control {
+    height: 32px;
+    line-height: 32px;
+    box-shadow: none;
+    border-radius: 2px;
+}
+table.table .form-control.error {
+    border-color: #f50000;
+}
+table.table td .add {
+    display: none;
+}
+#btnDownloadlog {
+    margin-right: 20px;
+}
+#customerTable {
+    display: block;
+}
+#log > p:hover {
+    background-color: gold;
+    cursor:crosshair;
+    padding: 2px;
+}
