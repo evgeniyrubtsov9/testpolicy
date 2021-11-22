@@ -6,7 +6,6 @@
     session_start();
     verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,19 +21,9 @@
 <body style='background-color: white;'>
     <?php include_once('common/navbar.php'); ?>
     <div class='container-lg'>
-    <?php
-        if(isset($_GET['current'])){
-            $currentUser = $_GET['current'];
-            echo "User wants to check/update his profile...<br> User: <input type='text' value='$currentUser'</input>";
-        }
-        if(isset($_GET['name'])){
-            $currentUser = $_GET['name'];
-            echo "User retrieved another profile...<br> User: $currentUser";
-        }
-    ?>
+        New Policy Action Form
     </div>
     <?php include_once('common/footer.php'); ?>
-    <script type="module" src="/JS scripts/JS User Functions.js"></script>
     <script type="module" src="/JS scripts/JS Ajax Functions.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
 </body>

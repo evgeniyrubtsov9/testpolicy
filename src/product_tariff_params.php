@@ -104,7 +104,7 @@
                         <tr>
                             <th>Age</th>
                             <th>Premium Part</th>
-                            <th>Value</th>
+                            <th>Sum Insured</th>
                         </tr>
                     </thead>
                     <tbody>             
@@ -148,14 +148,14 @@
             </div>
             <div class='col-sm-5' id='BMI'>
                 <table id='tableBMI' class='table table-bordered' >
-                    <label>BMI tariff</label>
+                    <label>Policy Parameters: BMI tariff</label>
                     <p>Base rates for policyholders' different body mass indexes</p>
                     <div class="loadingSymbol"></div>
                     <span id='tableBMIMsg'></span>           
                     <thead>
                         <tr>
                             <th>Body Mass Index</th>
-                            <th>Value</th>
+                            <th>Multiplier</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -181,6 +181,62 @@
                             }
                         ?>
                     </tbody>
+                </table>
+            </div>
+            <div class='col-sm-5' id='PolicyParams'>
+                <table id='tablePolicyParams' class='table table-bordered' >
+                    <label>Policy parameters: Cancer, Extreme sports, Smoker status tariff</label>
+                    <div class="loadingSymbol"></div>
+                    <span id='tablePolicyParamsMsg'></span>      
+                    <p></p>     
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Parameter</th>
+                            <th>Multiplier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style='vertical-align: middle;' rowspan="2">Cancer</td>
+                            <td>Yes</td>
+                            <td><input class='form-control' type='number' value='1.5'></input></td>
+                        </tr>
+                        <tr style='border-bottom: double;'>
+                            <td>No</td>
+                            <td><input class='form-control' type='number' value='1'></input></td>
+                        </tr>
+
+
+                        <tr>
+                            <td style='vertical-align: middle;' rowspan="2">Extreme sports</td>
+                            <td>Yes</td>
+                            <td><input class='form-control' type='number' value='1.75'></input></td>
+                        </tr>
+                        <tr style='border-bottom: double;'>
+                            <td>No</td>
+                            <td><input class='form-control' type='number' value='1'></input></td>
+                        </tr>
+
+
+                        <tr>
+                            <td style='vertical-align: middle;' rowspan="4">Smoker status</td>
+                            <td>Never</td>
+                            <td><input class='form-control' type='number' value='1'></input></td>
+                        </tr>
+                        <tr>
+                            <td>Not now</td>
+                            <td><input class='form-control' type='number' value='1.2'></input></td>
+                        </tr>
+                        <tr>
+                            <td>Less than 40 cigs a day</td>
+                            <td><input class='form-control' type='number' value='1.5'></input></td>
+                        </tr>
+                        <tr>
+                            <td>More than 40 cigs a day</td>
+                            <td><input class='form-control' type='number' value='1.75'></input></td>
+                        </tr>
+                    <tbody>
                 </table>
             </div>
         </div>

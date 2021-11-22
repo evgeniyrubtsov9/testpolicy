@@ -1,0 +1,12 @@
+#addNewPolicy {
+    float: right;
+    height: 30px;
+    font-size: 14px;
+    text-shadow: none;
+    min-width: 100px;
+    line-height: 13px;
+    color: black;
+}
+#dataTable_info {
+    display: none;
+}

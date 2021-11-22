@@ -11,8 +11,8 @@
                                 echo $row['customersAmount'];
                                 break;
                             }
-                        }
-                    ?> customers</span>
+                        }else echo 0;
+                    ?> customer(-s)</span>
                 </div>
                 <div class="col-sm-4">
                     <button type="button" class="add-new">Add New</button>
@@ -39,8 +39,9 @@
             </thead>
             <tbody>
                 <?php // sql to get customers and their countries and statuses                      
-                   $sqlCustomers = ' select *,
-                                  cust.name as customerName, 
+                   $sqlCustomers = ' select 
+                                  cust.name as customerName,
+                                  surname, email, address, DATE_FORMAT(date_of_birth, "%d %M %Y") date_of_birth, flex_text_1,
                                   cust.id as customerId,
                                   country.name as countryName, 
                                   country.code as countryCode,
@@ -77,7 +78,7 @@
                                     </td>
                                 </tr>';
                        }
-                    } else scriptLog($connection, 'TYPE=PHP INFO', $user, 'Customers not found in database'); 
+                    } else scriptLog($connection, 'TYPE=PHP INFO', getLoggedInUsername($connection), 'Customers not found in database'); 
                   ?>
             </tbody>
         </table>
