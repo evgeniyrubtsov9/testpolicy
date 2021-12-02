@@ -4,11 +4,8 @@
  * Version: 1.0
  * Description: Library to store jQuery authentication functions
  */
-import { isNullSafe, checkPasswordStrengthAndReturnScore, currentLink } from "./JS Utility Functions.js";
-import { localDatetime, loggedInUser, type} from "./JS Customer Functions.js"; // import necessary functions and variables from main.js
-import { ajaxLogResult, ajaxAuthenticateUser, ajaxChangePassword, ajaxVerifyUsername, ajaxVerifySecurityCode } from "./JS Ajax Functions.js";
-var user = loggedInUser; 
-user = isNullSafe(user) ? user : 'User is not authenticated';
+import { isNullSafe, checkPasswordStrengthAndReturnScore } from "./JS Utility Functions.js";
+import { ajaxAuthenticateUser, ajaxChangePassword, ajaxVerifyUsername, ajaxVerifySecurityCode } from "./JS Ajax Functions.js";
 $(document).ready(function() {
     $('#restorePassword').on('click', function(){
         $('#restore_password').css({'display' : 'block'})

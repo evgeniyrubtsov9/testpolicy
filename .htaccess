@@ -7,4 +7,3 @@ RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^(.*)$ $1.php
 RewriteCond %{THE_REQUEST} "^[^ ]* .*?\.php[? ].*$"
 RewriteRule .* - [L,R=403]
-

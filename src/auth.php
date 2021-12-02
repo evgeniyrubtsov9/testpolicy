@@ -1,8 +1,8 @@
 <?php 
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Auth Functions\phpAuthFunctions.php');
+    session_start();
+    $_SESSION['path'] = str_replace('/', '\\', substr(dirname($_SERVER["SCRIPT_FILENAME"]), 0, -4)); 
+    include_once($_SESSION['path']. '\PHP Auth Functions\phpAuthFunctions.php');
     include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php (src)
-    session_start(); 
     if(isset($_SESSION['loggedIn'])) {
         header('Location: index');
         exit();

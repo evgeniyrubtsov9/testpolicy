@@ -138,3 +138,6 @@ table.table td .add {
     cursor:crosshair;
     padding: 2px;
 }
+#custReturnMsg {
+    color: red;
+}

@@ -1,14 +1,12 @@
 <?php 
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($path . '\PHP CRUD functions\phpCrudFunctions.php');
-    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     session_start();
+    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
     verifyIfUserIsLoggedIn(); 
     invokeUtilityFunctions($connection);
-    //$user = getLoggedInUsername($connection); // if session variable username is not set, use 'System' as a user name (useful for the script logging function)
+    $user = getLoggedInUsername($connection); // if session variable username is not set, use 'System' as a user name (useful for the script logging function)
     invokeCustomerFunctions($connection, $user);
-    
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -24,9 +22,9 @@
     <title>TestPolicy</title>
 </head>
 <body style='background-color: white;'>
-    <?php include_once('common/navbar.php'); ?>
-    <?php include_once('common/customerTable.php'); ?>
-    <?php include_once('common/footer.php'); ?>
+    <?php include_once('navbar.php'); ?>
+    <?php include_once('customerTable.php'); ?>
+    <?php include_once('footer.php'); ?>
     <script type="text/javascript" src="/JS scripts/jQuery library.js"></script>
     <script type="module" src="/JS scripts/JS Customer Functions.js"></script>
     <script type="module" src="/JS scripts/JS Ajax Functions.js"></script>

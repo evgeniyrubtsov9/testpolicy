@@ -1,4 +1,4 @@
-import { localDatetime, loggedInUser, type} from "./JS Customer Functions.js"; // import necessary functions and variables from main.js
+import { localDatetime, loggedInUser } from "./JS Customer Functions.js"; // import necessary functions and variables from main.js
 import { ajaxLogResult, ajaxGetLogData, ajaxClearLogfile, ajaxDownloadLogFile, ajaxUploadProductDocuments, ajaxUpdateProductSetup, ajaxUpdateProductTariff,
         ajaxSetProductPremiumPartOptions } from "./JS Ajax Functions.js";
 var link = document.location.href;
@@ -18,24 +18,30 @@ export function isNullSafe(object){
  * @returns {Boolean} true, if name matches regular expression; false - if does not match
  */
 export function validateName(name){
-    ajaxLogResult(currentLink, localDatetime, 'VALIDATION', loggedInUser, 'validateName param: <b>'+name+'</b>');
     if(isNullSafe(name)){
         const regExp = /^[a-zA-Z]+$/; // only alphabetic characters: small, large (capitals); Additionally preventing spaces in the first name
         var result = regExp.test(String(name.trim())) ? true : false;
-        ajaxLogResult(currentLink, localDatetime, 'VALIDATION',loggedInUser, 'validateName returned: <b>'+result+'</b>');
         return result;
     }
+}
+/**
+ * 
+ * @param {Date} birthday - person's date of birth 
+ * @returns {Number} age - person's calculated age
+ */
+export function calculateAge(birthday) { // birthday is a date
+    var ageDifMs = Date.now() - birthday.getTime();
+    var ageDate = new Date(ageDifMs); // miliseconds from epoch
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
 }
 /**
  * @param {String} email - email to check for validity 
  * @returns {Boolean} true, if name matches regular expression; false - if does not match
  */
 export function validateEmail(email) {
-    ajaxLogResult(currentLink, localDatetime, 'VALIDATION',loggedInUser, 'validateEmail param: <b>'+email+'</b>');
     if(isNullSafe(email)){
         const regExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // simple regexp validation for the email format: anystring@anystring.anystring; Additionally preventing matching multiple '@' signs
         var result = regExp.test(String(email.trim()).toLowerCase()) ? true : false;
-        ajaxLogResult(currentLink, localDatetime, 'VALIDATION', loggedInUser, 'validateEmail returned: <b>'+result+'</b>');
         return result;
     }
     return false;
@@ -140,7 +146,6 @@ export function invokeBasicCustomerSetupFunctions(){
         paging : true, // pagination off
         ordering : false, // ordering off
     });
-    $('#dataTable_info').toggle(); 
     $('#btnExportCustomersToXls').on('click', function(){ 
         if(confirm('Download Customers excel file?')) 
             window.location = 'exportCustomersInXls' // download the customer list in Xls by referring to the appropriate php page

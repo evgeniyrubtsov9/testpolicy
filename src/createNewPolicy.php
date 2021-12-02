@@ -1,9 +1,8 @@
 <?php
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($path . '\PHP CRUD functions\phpCrudFunctions.php');
-    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     session_start();
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
 ?>
@@ -19,11 +18,11 @@
     <link rel="stylesheet" href="/styles/index_page.css">
 </head>
 <body style='background-color: white;'>
-    <?php include_once('common/navbar.php'); ?>
+    <?php include_once('navbar.php'); ?>
     <div class='container-lg'>
         New Policy Action Form
     </div>
-    <?php include_once('common/footer.php'); ?>
+    <?php include_once('footer.php'); ?>
     <script type="module" src="/JS scripts/JS Ajax Functions.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
 </body>

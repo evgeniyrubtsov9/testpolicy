@@ -1,9 +1,8 @@
 <?php
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($path . '\PHP CRUD functions\phpCrudFunctions.php');
-    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     session_start();
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
     invokeProductFunctions($connection);
@@ -22,7 +21,7 @@
     <link rel="stylesheet" href="/styles/auth_page.css">
 </head>
 <body style='background-color: white;'>
-    <?php include_once('common/navbar.php'); ?>
+    <?php include_once('navbar.php'); ?>
     <div class='container-lg'>
         <form class="form-horizontal" id='product_form' method="post">
             <input type='hidden' name='product_form'>
@@ -201,7 +200,7 @@
             </div>
         </div>';?>
     </div>
-    <?php include_once('common/footer.php');?>
+    <?php include_once('footer.php');?>
     <script type="module" src="/JS scripts/JS Customer Functions.js"></script>
     <script type="module" src="/JS scripts/JS Ajax Functions.js"></script>
     <script type="module" src="/JS scripts/JS Product Functions.js"></script>

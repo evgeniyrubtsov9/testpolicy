@@ -1,9 +1,9 @@
 <?php
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($path . '\PHP CRUD functions\phpCrudFunctions.php');
-    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     session_start();
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
+    
     verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
 ?>
@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="/styles/policy.css">
 </head>
 <body style='background-color: white;'>
-    <?php include_once('common/navbar.php'); ?>
+    <?php include_once('navbar.php'); ?>
     <div class='container-lg'>
         <div class="table-responsive">
             <div class="table-title">
@@ -43,7 +43,7 @@
                     </div>
                 </div>
             </div>
-            <table class="table table-bordered" id='dataTable'>
+            <table class="table table-bordered" id='policies'>
                 <thead>
                     <tr>
                         <th>Policy Serial</th>
@@ -58,9 +58,9 @@
                 </thead>
                 <tbody>
                     <?php 
-                        $sqlGetPolicies = "select id as serial, created_by,
-                                            (select concat(c.name, ' ',c.surname) from customer c, policy p where c.id = p.customer_serial) as customer, 
-                                            DATE_FORMAT(start_date, '%d %M %Y') start_date, DATE_FORMAT(end_date, '%d %M %Y') end_date, status, DATE_FORMAT(created, '%d %M %Y') created, total_premium, currency from policy";
+                        $sqlGetPolicies = "select policy.id as serial, concat(name, ' ', surname) customer, policy.created_by, 
+                        DATE_FORMAT(start_date, '%d %M %Y') start_date, DATE_FORMAT(end_date, '%d %M %Y') end_date, status, 
+                        DATE_FORMAT(created, '%d %M %Y') created, total_premium, currency from policy join customer on policy.customer_serial = customer.id";
                         $policies = $connection->query($sqlGetPolicies);
                         if($policies->num_rows > 0){
                             while($row = $policies->fetch_assoc()){
@@ -83,8 +83,10 @@
             </table>
         </div>
     </div>
-    <?php include_once('common/footer.php'); ?>
+    <?php include_once('footer.php'); ?>
     <script type="module" src="/JS scripts/JS Policy Functions.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
 </body>
 </html>

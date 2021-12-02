@@ -1,13 +1,11 @@
 <?php 
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($path . '\PHP CRUD functions\phpCrudFunctions.php');
-    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     session_start();
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     verifyIfUserIsLoggedIn();
     verifyAdministrator();
     invokeUtilityFunctions($connection);
-    
     if(isset($_GET['getLogData'])) retrieveInfoFromDatabase('getLogData', $connection); // get logs from log table
     if(isset($_GET['getLogDataToDownload'])) retrieveInfoFromDatabase('getLogDataToDownload', $connection); // send log file in txt format to download
     if(isset($_POST['clearLogfile'])){
@@ -31,14 +29,14 @@
     <title>TestPolicy</title>
 </head>
 <body style='background-color: white;'>
-    <?php include_once('common/navbar.php'); ?>
+    <?php include_once('navbar.php'); ?>
     <div class='container' id="log"><div class="loadingSymbol"></div></div>
     <div id='downloadLog'>
         <div class="loadingSymbol"></div>
         <button id='btnDownloadlog'>Download</button>
         <button id='btnClearlog'>Clear Log</button>
     </div>
-    <?php include_once('common/footer.php'); ?>
+    <?php include_once('footer.php'); ?>
     <script type="text/javascript" src="/JS scripts/jQuery library.js"></script>
     <script type="module" src="/JS scripts/JS Customer Functions.js"></script>
     <script type="module" src="/JS scripts/JS Ajax Functions.js"></script>

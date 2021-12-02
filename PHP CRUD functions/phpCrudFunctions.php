@@ -5,8 +5,7 @@
     * Version: 1.0
     * Description: Library stores basic CRUD (create remove update delete) functions in PHP
     */
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
    /**
     * @param $connection - connection query-path to database,
     * @param $customerId - id of the customer to delete
@@ -14,7 +13,7 @@
     */
     function removeCustomer($connection, $loggedInUser, $customerId){
         $processName = 'CUSTOMER REMOVE';
-        scriptLog($connection, $processName, $loggedInUser, "User removing customer: " . $customerId);
+        scriptLog($connection, $processName, $loggedInUser, "Removing customer: <b>$customerId</b>");
         if(!empty($customerId) && !($connection->connect_error)){
             $customerId = $connection->real_escape_string($_POST['customerId']);
             $sqlRemoveCustomer = $connection->prepare('delete from customer where id = ?');
@@ -38,12 +37,16 @@
      */
     function addOrUpdateCustomer($key, $connection, $responsibleUser, $name, $surname, $email, $address, $dateOfBirth, $countryCode, $gender, $status_code, $flextext1, $customerId){
         $processName = 'ADD-OR-UPDATE CUSTOMER';
-        scriptLog($connection, $processName, $responsibleUser, "Received AJAX request... ");
+        if($name == null || empty($name) || $name == '' || strlen($name) == 0 || $surname == null || empty($surname) || $surname == '' || strlen($surname) == 0) {
+            scriptLog($connection, $processName, $responsibleUser, "ReturnMsg: Customer name or/and surname is empty!");
+            exit('ERROR Customer name or/and surname is empty!');
+        }
+        scriptLog($connection, $processName, $responsibleUser, "Customer details...");
         // Ugly way to get function arguments. php built-in function func_get_args() was adding a lot of unwanted loading time
         $params = array('key: ' => $key, 'responsible user: ' => $responsibleUser, 'name: ' => $name, 'surname: ' => $surname, 'email: ' => $email, 'address: ' => $address,
             'birthdate: ' => $dateOfBirth, 'countryCode: ' => $countryCode, 'gender: ' => $gender, 'status code: ' => $status_code, 'customer serial: ' => $customerId);
         $paramsToString = "";
-            foreach($params as $paramsKey=>$value) {
+        foreach($params as $paramsKey=>$value) {
             scriptLog($connection, $processName, $responsibleUser, '<b>'.$paramsKey.'</b>'.(($value == '') ? "[empty]" : $value));
             $paramsToString .= $value . ' :: ';
         }
@@ -86,7 +89,7 @@
     }
 
     function invokeCustomerFunctions($connection, $user){
-        $processName = 'CUSTOMER MANIPULATION';
+        $processName = 'CUSTOMER';
         if(isset($_GET['getCountryList'])) retrieveInfoFromDatabase('getCountryList', $connection); // get countries list with their codes from country table
         if(isset($_GET['loadOrUpdateCustomersList'])) loadOrUpdateCustomersList($connection); // load or update customer list table
         if(isset($_POST['addOrUpdate'])) { // Edit customer & Add Customer
@@ -106,10 +109,10 @@
             $customerId = $customerId == null ? "No serial yet. New Customer" : $customerId;
             scriptLog($connection, $processName, $user, 'Customer serial: <b>'.$customerId.'</b>');
             if($action == 'addCustomer'){
-                addOrUpdateCustomer('add', $connection, $user, $name,$surname,$email,$address,$dateOfBirth,$countryCode,$gender,$status_code,$flextext1,
-                    null);
+                addOrUpdateCustomer('add', $connection, $responsibleUser, $name,$surname,$email,$address,$dateOfBirth,$countryCode,$gender,$status_code,$flextext1,
+                   null);
             } else if($action == 'updateCustomer'){ 
-                addOrUpdateCustomer('update', $connection, $user, $name,$surname,$email,$address,$dateOfBirth,$countryCode,$gender,$status_code,$flextext1,$customerId);
+                addOrUpdateCustomer('update', $connection, $responsibleUser, $name,$surname,$email,$address,$dateOfBirth,$countryCode,$gender,$status_code,$flextext1,$customerId);
             }
         }
         if(isset($_POST['removeCustomer'])){ // Remove Customer function. If variable removeCustomer is set up, remove the customer using the appropriate function

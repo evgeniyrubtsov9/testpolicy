@@ -1,0 +1,30 @@
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+    border-top: none;
+    padding: 2px;
+}
+td:nth-child(1) { 
+    font-weight: bold;
+}
+#policyTermCause {
+    width: 250px;
+    height: 25px;
+    max-width: 160px;
+    resize: none;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button { /* remove arrows (down/up) for input type = number */
+  -webkit-appearance: none;
+  margin: 0;
+} 
+input:not([type='date']){
+    width: 50px;
+}
+#customerDialog > input {
+    width: 100%;
+}
+label {
+    padding-top: 10px;
+}
+input, select{
+    text-align: center;
+}

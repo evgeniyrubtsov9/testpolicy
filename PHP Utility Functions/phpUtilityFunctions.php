@@ -5,8 +5,8 @@
     * Version: 1.0
     * Description: Library to store helper/utility functions in PHP
     */
-    include_once('database.php');
-    include_once($path . '\PHP Product functions\phpProductFunctions.php');
+    include_once($_SESSION['path'].'\src\database.php');
+    include_once($_SESSION['path'].'\PHP Product Functions\phpProductFunctions.php');
     //$user = getLoggedInUsername($connection);
     /**
      * @param $connection - database mysqli connection
@@ -179,7 +179,7 @@
      */
     function retrieveInfoFromDatabase($key, $connection){
         $processName = 'DATA RETRIEVE BY KEY : '.$key;
-        scriptLog($connection, $processName, getLoggedInUsername($connection), "Retrieving data...");
+        //scriptLog($connection, $processName, getLoggedInUsername($connection), "Retrieving data...");
         if(!empty($key)){
             if($key == 'getCountryList'){
                 if(isset($_GET['getCountryList'])){
@@ -187,17 +187,17 @@
                     if($sqlCountries->num_rows > 0){
                         while ($row = $sqlCountries->fetch_assoc()) 
                             $returnCountries .= $row['name'] .' '. $row['code']. ","; // result will contain countries names and code values           
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), "ReturnMsg: ".getReturnMessage('success'));
+                        //scriptLog($connection, $processName, getLoggedInUsername($connection), "ReturnMsg: ".getReturnMessage('success'));
                         exit($returnCountries);
                     } else {
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('countryListFail'));
+                        //scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('countryListFail'));
                         exit(getReturnMessage('countryListFail'));
                     }
                 }
             } 
             if($key == 'getLogData'){
                 if(isset($_GET['getLogData'])){
-                    $sqlLog = $connection->query("select datetime, name, username, log_data from log");
+                    $sqlLog = $connection->query("select date_format(datetime, '%d-%m-%Y %H:%i:%s') as datetime, name, username, log_data from log");
                     if($sqlLog->num_rows > 0){
                         while($rowLog = $sqlLog->fetch_assoc()){
                             $returnLogData .= "<p>" . $rowLog['datetime'] .      // fetching data into returnLogData
@@ -205,10 +205,10 @@
                                             ' :: [' . $rowLog['username'] . '] :: ' . 
                                                       $rowLog['log_data'] . "</p>";
                         }
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('success'));
+                        //scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('success'));
                         exit($returnLogData);
                     } else {
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('getLogFail'));
+                        //scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('getLogFail'));
                         exit(getReturnMessage('getLogFail'));
                     }
                 }
@@ -232,10 +232,10 @@
                         header('Content-Disposition: attachment'); // attachment means it will be downloaded and saved locally, but not on the web page 
                         header('Content-Length: ' . filesize($file)); // size of the message body in bytes
                         readfile($file); // read the file and write it to the output buffer
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('success'));
-                        exit(); // no need to exist with anything, since ajax will get everything, what did the GET request in php code
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'Downloaded the log file. ReturnMsg: '.getReturnMessage('success'));
+                        exit(); // no need to exist with anything, since ajax will get everything, what did the GET request in php
                     } else {
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('downloadLogFail'));
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'The log file is empty! ReturnMsg: '.getReturnMessage('downloadLogFail'));
                         exit(getReturnMessage('downloadLogFail'));
                     }
                 }
@@ -294,7 +294,7 @@
      */
     function uploadProductDocumentsToDatabase($connection){
         $processName = 'PROD-DOCS UPLOAD';
-        scriptLog($connection, $processName, getLoggedInUsername($connection), 'User uploading Product documents...');
+        scriptLog($connection, $processName, getLoggedInUsername($connection), 'User uploading product documents...');
         $productDocumentName;
         if($_FILES['gtc']['name'] != '') $productDocumentName = 'gtc';
         if($_FILES['ipid']['name'] != '') $productDocumentName = 'ipid';
@@ -306,17 +306,17 @@
         $ext = pathinfo($filename, PATHINFO_EXTENSION); // get the extension from file using built-in php function
         if($productDocumentName == 'logo'){
             if(!validateExtensionByType('image', $ext)){
-                scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '. getReturnMessage('imgExt'));
+                scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: <b>'. getReturnMessage('imgExt').'</b>');
                 exit(getReturnMessage('imgExt'));
             }
         }else {
             if(!validateExtensionByType('file', $ext)) {
-                scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '. getReturnMessage('fileExt'));
+                scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: <b>'. getReturnMessage('fileExt').'</b>');
                 exit(getReturnMessage('fileExt'));
             }
         }
         if(!validateFilesizeBytes($filesize, 25000000)) { // validate if filesize is <= 25 MB
-            scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '. getReturnMessage('fileSize'));
+            scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: <b>'. getReturnMessage('fileSize').'</b>');
             exit(getReturnMessage('fileSize'));
         }
         $fp = fopen($fileTemporaryName, 'r');
@@ -336,15 +336,21 @@
             $sql = $connection->query($sqlAddFile);
         }   
         if($sql && $updated) {
-            scriptLog($connection, $processName, getLoggedInUsername($connection), 'User successfully UPDATED: <b>'.$filename.'</b>. Original name: '.$_FILES[$productDocumentName]['name']);
+            scriptLog($connection, $processName, getLoggedInUsername($connection), 'User successfully UPDATED: <b>'.$filename.'</b>. Original name: <b>'.$_FILES[$productDocumentName]['name'].'</b>');
             exit('Updated: '.$filename);
         } 
         else if($sql && !$updated) {
-            scriptLog($connection, $processName, getLoggedInUsername($connection), 'User successfully UPLOADED: <b>'.$filename.'</b>. Original name: '.$_FILES[$productDocumentName]['name']);
+            scriptLog($connection, $processName, getLoggedInUsername($connection), 'User successfully UPLOADED: <b>'.$filename.'</b>. Original name: <b>'.$_FILES[$productDocumentName]['name'].'</b>');
             exit('Uploaded: '.$filename);
         }
-        scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: '.getReturnMessage('dbError')); 
+        scriptLog($connection, $processName, getLoggedInUsername($connection), 'ReturnMsg: <b>'.getReturnMessage('dbError').'</b>'); 
         exit(getReturnMessage('dbError'));
+    }
+    function partiallyHideEmail($email){
+        $em   = explode("@",$email);
+        $name = implode('@', array_slice($em, 0, count($em)-1));
+        $len  = floor(strlen($name)/2);
+        return substr($name,0, $len) . str_repeat('*', $len) . "@" . end($em);   
     }
 
     /**
@@ -354,7 +360,7 @@
     function getReturnMessage($keyValue){
         $returnMessages = array( 
             'success' => 'Event has been finished with success', 
-            'addCustomerFail' => 'SQL received following params, but execution failed: ',
+            'addCustomerFail' => 'ERROR SQL received customer creation parameters, but execution failed',
             'userNotExist' => 'ERROR User does not exist. Contact Administrator',
             'credentialsFail' => 'Incorrect credentials',
             'removeCustomerFail' => 'ERROR. Fail to remove customer (id): ',
@@ -362,8 +368,8 @@
             'getLogFail' => 'GETLOG_ERROR Function failed to get log data',
             'downloadLogFail' => 'DOWNLOADLOG_ERROR Function failed to download log file',
             'custListEmpty' => 'Xls file created, but customers list is empty',
-            'updCustumerFail' => 'Function failed to update customer',
-            'keyFail' => 'Incorrect key was passed to the function',
+            'updCustumerFail' => 'ERROR Function failed to update customer',
+            'keyFail' => 'ERROR Incorrect key was passed to the function',
             'emptyList' => 'ERROR Function failed to find customers in the database',
             'userBlocked' => 'Too many login attempts. Your account is blocked. Please contact Administrator',
             'securCodeActive' => 'AC-ERROR Security code was already sent. It\'s active for 30 minutes. Check email: ',

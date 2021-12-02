@@ -3,13 +3,11 @@
      * File: exportCustomersXls.php
      * The page sends excel file with the customer's list to downloading 
      */
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($path . '\PHP CRUD functions\phpCrudFunctions.php');
-    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     session_start();
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     verifyIfUserIsLoggedIn();
-    //$user = getLoggedInUsername($connection); // if session variable username is not set, use 'System' as a user name
     $fileName = "customers_" . getLoggedInUsername($connection) . "_" . date('Y-m-d H:i:s', time()) . ".xls"; // Excel file name with xls extenstion for download 
     $fields = array('Serial', 'Name', 'Surname', 'Email', 'Address', 'Date of Birth', 'Country', 'Gender', 'Status', 'Created By', 'Changed By', 'Flex Text 1'); // Column names 
     $excelData = implode("\t", array_values($fields)) . "\n"; // Display column names as first row 

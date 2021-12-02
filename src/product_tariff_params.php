@@ -1,9 +1,8 @@
 <?php
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($path . '\PHP CRUD functions\phpCrudFunctions.php');
-    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     session_start();
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
     invokeProductTariffFunctions($connection); 
@@ -22,11 +21,11 @@
     <link rel="stylesheet" href="/styles/auth_page.css">
 </head>
 <body style='background-color: white;'>
-    <?php include_once('common/navbar.php'); ?>
+    <?php include_once('navbar.php'); ?>
     <div class='container-lg'>
         <legend><strong>LIFE</strong> product: <a id='productSetup' href='product'>Tariff Parameters</a></legend>
-        <div class='row' style='padding-left: 15%;'>
-            <div class="col-sm-5" id='BaseRates'>
+        <div class='row' style='display: flex; justify-content: center;'>
+            <div class="col-sm-3" id='BaseRates'>
                 <table id='tableBaseRates' class='table table-bordered'>
                     <label>Base rates tariff</label>
                     <p>Base rates for each cover of the product</p>
@@ -54,7 +53,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class='col-sm-5' id='MaxAge'>
+            <div class='col-sm-3' id='MaxAge'>
                 <table id='tableMaxAge'class='table table-bordered'>
                     <label>Max Age tariff</label>
                     <p>Maximal & Minimal age for the given policy option</p>
@@ -92,8 +91,6 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-        <div class='row' style='padding-left: 15%;'>
             <div class="col-sm-5" id='SumInsured'>
                 <table id='tableSumInsured' class='table table-bordered'>
                     <label>Sum Insured tariff</label>
@@ -146,6 +143,8 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div class='row' style='display: flex; justify-content: center;'>
             <div class='col-sm-5' id='BMI'>
                 <table id='tableBMI' class='table table-bordered' >
                     <label>Policy Parameters: BMI tariff</label>
@@ -183,7 +182,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class='col-sm-5' id='PolicyParams'>
+            <div class='col-sm-4' id='PolicyParams'>
                 <table id='tablePolicyParams' class='table table-bordered' >
                     <label>Policy parameters: Cancer, Extreme sports, Smoker status tariff</label>
                     <div class="loadingSymbol"></div>
@@ -197,17 +196,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style='vertical-align: middle;' rowspan="2">Cancer</td>
-                            <td>Yes</td>
-                            <td><input class='form-control' type='number' value='1.5'></input></td>
-                        </tr>
-                        <tr style='border-bottom: double;'>
-                            <td>No</td>
-                            <td><input class='form-control' type='number' value='1'></input></td>
-                        </tr>
-
-
                         <tr>
                             <td style='vertical-align: middle;' rowspan="2">Extreme sports</td>
                             <td>Yes</td>
@@ -241,7 +229,7 @@
             </div>
         </div>
     </div>
-    <?php include_once('common/footer.php'); ?>
+    <?php include_once('footer.php'); ?>
     <script type="module" src="/JS scripts/JS Customer Functions.js"></script>
     <script type="module" src="/JS scripts/JS Ajax Functions.js"></script>
     <script type="module" src="/JS scripts/JS Product Functions.js"></script>

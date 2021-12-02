@@ -20,6 +20,7 @@
                 </div>
             </div>
         </div>
+        <span id='custReturnMsg'></span>
         <div class="loadingSymbol" style='display: block; text-align: center'></div>
         <table class="table table-bordered" id='dataTable' style='display: none;'>
             <thead>
@@ -33,16 +34,16 @@
                     <th>Country</th>
                     <th>Gender</th>
                     <th>Status</th>
-                    <th>Flex Text 1</th>
+                    <th>Notes</th>
                     <th id='thAction'>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php // sql to get customers and their countries and statuses                      
                    $sqlCustomers = ' select 
-                                  cust.name as customerName,
-                                  surname, email, address, DATE_FORMAT(date_of_birth, "%d %M %Y") date_of_birth, flex_text_1,
-                                  cust.id as customerId,
+                                  cust.name as customerName, 
+                                  surname, email, address, ifnull(nullif(date_format(date_of_birth, "%d-%m-%Y"), "00-00-0000"), null) date_of_birth, flex_text_1,
+                                  cust.id as customerId, gender, 
                                   country.name as countryName, 
                                   country.code as countryCode,
                                   customer_status.name as customerStatus, 
@@ -57,7 +58,8 @@
                         while($row = $result->fetch_assoc()) {
                             $customersAmount = $row['customersAmount'];
                             $gender = returnGenderByCode($row['gender']);
-                            $dateOfBirth = $row['date_of_birth'] != '0000-00-00' ? $row['date_of_birth'] : null; // 0000-00-00 means that date was not selected when creating the customer
+                            $dateOfBirth = $row['date_of_birth'] != '00-00-0000' ? $row['date_of_birth'] : null; // 00-00-0000 means that date was not selected when creating the customer
+                            if($dateOfBirth != null) $dateOfBirth .= ' ('.date_diff(new DateTime($dateOfBirth), date_create('now'))->y.' yo) ';
                             echo '<tr>'; // Retrieve table data out of the sql result...
                             echo    '<td>'.$row['customerId'].'</td>', // href="policy?serial='.$row['policySerial'].'"
                                     '<td id="customer_'.$row['customerId'].'">'.$row['customerName'].'</td>', 

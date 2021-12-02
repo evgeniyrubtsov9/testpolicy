@@ -5,10 +5,22 @@
     * Version: 1.0
     * Description: Library stores basic CRUD (create remove update delete) functions in PHP
     */
-    $path = 'D:\openserver\domains\testpolicy';
-    include_once($path . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
     function updateProductSetup($connection){
+        function returnTextValueByCode($code){
+            if(!empty($code)){
+                if($code == 1 || $code == 2 || $code == 3){
+                    if($code == 1) return 'Included and mandatory';
+                    else if ($code == 2) return 'Optional and off by default';
+                    else if ($code == 3) return 'Optional and on by default';
+                }
+                return 'ERROR Relation code not found';
+            }
+            return 'ERROR Relation code not found';
+        }
         if(isset($_POST['product_form'])){
+            $processName = 'PRODUCT SETUP';
+            scriptLog($connection, $processName, getLoggedInUsername($connection), 'User updating product setup...');
             $deathCoverOptionSelected = $_POST['Death'];
             $accidentalDeathOptionSelected = $_POST['AccidentalDeath'];
             $accidentOptionSelected = $_POST['Accident'];
@@ -30,7 +42,17 @@
                 valid_to=?, status=?, changed_when=localtime(), changed_by='".getLoggedInUsername($connection)."'");
             $sqlUpdateProductSetup->bind_param('sssss', $productName, $productCommercialDescription, $productValidFrom, $productValidTo, $productStatus);
             if($sqlUpdateProductSetup->execute() && $sqlUpdateCoverDeathRelation->execute() && $sqlUpdateCoverAccidentalDeathRelation->execute()
-                &&  $sqlUpdateCoverAccidentRelation->execute()) exit('success');
+                &&  $sqlUpdateCoverAccidentRelation->execute()) { 
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Set <b>Death</b> cover relation: <b>$deathCoverOptionSelected (".returnTextValueByCode($deathCoverOptionSelected).')</b>');
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Set <b>Accidental Death</b> cover relation: <b>$accidentalDeathOptionSelected (".returnTextValueByCode($accidentalDeathOptionSelected).')</b>');
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Set <b>Accident</b> cover relation: <b>$accidentOptionSelected (".returnTextValueByCode($accidentOptionSelected).')</b>');
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Product: <b>$productName</b>");
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Description: <b>$productCommercialDescription</b>");
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Valid From: <b>$productValidFrom</b>");
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Valid To: <b>$productValidTo</b>");
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Status: <b>$productStatus</b>");
+                    exit('success');
+                }
             else exit(getReturnMessage('dbError'));
         }
     }

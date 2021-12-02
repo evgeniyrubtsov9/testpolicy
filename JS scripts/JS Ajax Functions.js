@@ -4,8 +4,8 @@
  * Version: 1.0
  * Description: Library to store single Ajax functions - GET/POST requests
  */
-import { localDatetime, loggedInUser, type} from "./JS Customer Functions.js"; // import necessary functions and variables from main.js
-import { isNullSafe, currentLink } from "./JS Utility Functions.js";
+import { localDatetime, loggedInUser} from "./JS Customer Functions.js"; // import necessary functions and variables from main.js
+import { isNullSafe, currentLink, calculateAge } from "./JS Utility Functions.js";
 /**
  * 
  * @param {String} key - key for the function to understand what action to perform (add or update)
@@ -22,22 +22,11 @@ import { isNullSafe, currentLink } from "./JS Utility Functions.js";
  * @param {String} customerId - customer id 
  */
 export function ajaxAddOrUpdateCustomer(key, name, surname, email, address, dateOfBirth, countryCode, genderCode, statusCode, user, flexText1, customerId){
-    var processName = 'ADD-OR-UPDATE CUSTOMER'
-    ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'Invoking customer add/update AJAX function... key: '+key);
-    // var params = "Params ::" + "Name :: " +name + " | Surname :: " + surname + " | Email :: " + email + " | Address :: " + address
-    //                             + " | Date of Birth :: " + dateOfBirth + " | Country Code :: " + countryCode + " | Gender Code :: " + genderCode + " | Status Code :: " + statusCode 
-    //                             + " | Created By :: " + user + " | Flex Text 1 :: " + flexText1 + " | customer id :: " + customerId;
-    // ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'ajaxAddOrUpdateCustomer params = ' + params);
     var createdByUser = isNullSafe(user) ? user : "System";
-    if(!isNullSafe(name)) alert('ERROR. Customer first name cannot be empty');
-    if(key != 'add' && key != 'update') {
-        ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'ReturnMsg: <b>incorrect KEY used</b>');
-        return;
-    } else if(key == 'add' || key == 'update'){
-        // when adding a customer - use createdByUser for created_by column in DB; for update customer - use global variable loggedInUser for changed_by field 
+    if(key != 'add' && key != 'update') return;
+    else if(key == 'add' || key == 'update'){
         var responsibleUser = key == 'add' ? createdByUser : loggedInUser;
         var actionValue = key == 'add' ? 'addCustomer' : 'updateCustomer';
-        ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'Responsible user: <b>'+responsibleUser+'</b> | action: <b>'+actionValue+'</b>');
         $.ajax({
             url: currentLink, method: 'POST',
             data: {
@@ -54,26 +43,12 @@ export function ajaxAddOrUpdateCustomer(key, name, surname, email, address, date
                 flex_text_1: flexText1,
                 customer_id: customerId
             },
+            dataType: 'text',
             success: function(response){
-                console.log(response);
-                if(response.length > 0){
-                    if(response.indexOf('success') >= 0) ajaxLogResult(currentLink, localDatetime, type, loggedInUser, 'ReturnMsg: SUCCESS');
-                    else ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'ReturnMsg: Response received, however action: <b>'+actionValue+'</b> failed');
-                }
-            },
-            dataType: 'text'
-        }).done(function() { 
-            if(actionValue == 'addCustomer'){
-                //ajaxLoadOrUpdateCustomersList();
-                window.location = 'index';
-            }else {
-                $('#dataTable').DataTable().destroy(); // destroy data table to build it again, later
-                $('#dataTable').DataTable({ // use data table plugin to create 'beautiful' table with the search option
-                    paging : true, // pagination off
-                    ordering : false, // ordering off
-                });
+                console.log(response)
+                if(response.indexOf('ERROR') < 0) window.location = 'index'
+                else $('#custReturnMsg').html(response.replace('ERROR', '')).css({'display' : 'block'})
             }
-
         })
     }
 }
@@ -82,41 +57,29 @@ export function ajaxAddOrUpdateCustomer(key, name, surname, email, address, date
  * Function sends ajax POST request to index.php, $_POST[key] = removeCustomer
  */
 export function ajaxRemoveCustomer(customerId){
-    var processName = 'CUSTOMER REMOVE'
-    ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'Invoking customer remove AJAX function...');
     $.ajax({
         url: currentLink,method: 'POST', data: {
             removeCustomer: 1,
             customerId: customerId
         },
-        success: function(response){
-            if(response.indexOf('success') >= 0) ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'ReturnMsg: <b>SUCCESS</b>');
-            else ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'ReturnMsg: <b>FAIL</b>');
-        },
         dataType: 'text',
-    })//.done(function(){ ajaxLogResult(currentLink, localDatetime, processName, loggedInUser, 'ajaxRemoveCustomer end'); })
+    })
 };
-    
 /**
  * Function with no params. Function sends GET request to index.php to get the logs and appends the response to the appropriate DIV (scriptlog) in case of successful request
  */
 export function ajaxGetLogData(){
-    //ajaxLogResult(currentLink, localDatetime, type, loggedInUser, 'ajaxGetLogData start');
     $('#log > .loadingSymbol').toggle();
     $.ajax({
         url: currentLink, method: 'GET', data: { getLogData: 1 }, 
         success: function(response){
-            if(response.indexOf('GETLOG_ERROR') < 0) { // if response does not contain 'GETLOG_ERROR'
-                $('#log').empty();
+            $('#log').empty();
+            if(response.indexOf('GETLOG_ERROR') < 0) { // if response does not contain 'GETLOG_ERROR'   
                 $('#log').append(response);
-                //ajaxLogResult(currentLink, localDatetime, type, loggedInUser, 'ajaxGetLogData the log received and loaded into ScriptLog');
-            }else ajaxLogResult(currentLink, localDatetime, 'GET LOG-DATA', loggedInUser, 'AJAX function received the response, but the log was not received. Response: <b>'+response+'</b>');
+            }
         },
         dataType: 'text'
-    }).done(function(){ 
-        //ajaxLogResult(currentLink, localDatetime, type, loggedInUser, 'ajaxGetLogData end'); 
-        $('#log > .loadingSymbol').toggle();
-    });
+    }).done(function(){$('#log > .loadingSymbol').toggle()});
 }
 /**
  * Function with no params. Sends GET request to index.php to get log file. 
@@ -127,14 +90,14 @@ export function ajaxGetLogData(){
     $.ajax({
         url: currentLink, method: 'GET', data: { getLogDataToDownload: 1 }, dataType: 'text',
         success: function(response){
+            response = response.replace('<b>', '')
+            response = response.replace('</b>', '')
             if(response.indexOf('DOWNLOADLOG_ERROR') < 0) { // if response does not contain 'DOWNLOADLOG_ERROR'
                 var link = document.createElement('a'); // create link with txt file from response and download the file
                 link.setAttribute('download', 'scriptLog_' + localDatetime);
                 link.setAttribute('href', 'data: text/plain; charset=utf-8,' + encodeURIComponent(response));
                 link.click(); 
-                ajaxLogResult(currentLink, localDatetime, 'DOWNLOAD LOG-FILE', loggedInUser, 'ReturnMsg: <b>SUCCESS</b>');
-            } 
-            else ajaxLogResult(currentLink, localDatetime, 'DOWNLOAD LOG-FILE', loggedInUser, 'ReturnMsg: <b>FAIL</b>. Response: ' + response);
+            }
         }
     }).done(function() { $('#downloadLog > .loadingSymbol').toggle(); });
 }
@@ -153,7 +116,8 @@ export function ajaxLogResult(link, datetime, name, username, logData){
             action: name,
             username: username,
             logData: logData
-        }, dataType: 'text',
+        }, 
+        dataType: 'text',
         success: function(response){
             if(response.indexOf('success') >= 0){
                 if(logData.indexOf('error') >=0 || logData.indexOf('ERROR') >=0)
@@ -172,12 +136,7 @@ export function ajaxLogResult(link, datetime, name, username, logData){
 export function ajaxClearLogfile(){
     $.ajax({
         url: currentLink, method: 'POST', data: { clearLogfile: 1 }, 
-        success: function(response){
-            if(response.indexOf('success') >= 0) { 
-                ajaxLogResult(currentLink, localDatetime, 'CLEAR LOG', loggedInUser, 'ReturnMsg: <b>SUCCESS</b>'); 
-                ajaxGetLogData(); // load the log table from database after clearing the log
-            }else ajaxLogResult(currentLink, localDatetime, 'CLEAR LOG', loggedInUser, 'ReturnMsg: <b>RESPONSE RECEIVED, BUT ACTION FAILED: </b>'+response);
-        },
+        success: function(response){ if(response.indexOf('success') >= 0) ajaxGetLogData(); console.log(response); }, // load the log table from database after clearing the log
         dateType: 'text'
     })
 }
@@ -191,8 +150,7 @@ export function ajaxLoadOrUpdateCustomersList(){
             if(response.indexOf('ERROR') < 0) {
                 $('#dataTable tbody').empty();
                 $('#dataTable tbody').append(response);
-                ajaxLogResult(currentLink, localDatetime, 'UPDATE CUSTOMER LIST', loggedInUser, 'ReturnMsg: <b>SUCCESS</b>'); 
-            } else ajaxLogResult(currentLink, localDatetime, 'UPDATE CUSTOMER LIST', loggedInUser, 'ReturnMsg: <b>RESPONSE RECEIVED, BUT CONTAINS ERROR: </b>'+response); 
+            }
         }
     })
 }
@@ -246,8 +204,7 @@ export function ajaxVerifyUsername(username){
     if(isNullSafe(username)){
         $('.loadingSymbol').toggle();
         $.ajax({ 
-            url: currentLink,
-            method: 'GET',
+            url: currentLink, method: 'GET',
             data: { 
                 restorePassword: 1,
                 username: username
@@ -261,9 +218,7 @@ export function ajaxVerifyUsername(username){
                     $('.securityCode').html('Security code sent to: ' + response).css({'display' : 'block'})
                     $('#restorePasswordUsername').attr('disabled', true)
                     $('#restorePasswordSubmitSecurityCode, #restorePasswordMsg, #restorePasswordSubmitUsername').toggle()
-                } else {
-                    $('#restorePasswordMsg').html(response.replace('ERROR', ''));
-                }
+                } else $('#restorePasswordMsg').html(response.replace('ERROR', '')); 
             },
             dataType: 'text'
         }).done(function(){$('.loadingSymbol').toggle();})
@@ -331,7 +286,6 @@ export function ajaxUpdateProductSetup(formData){
         contentType: false,
         processData: false,
         success: function(response){
-            //console.log(response)
             if(response.indexOf('ERROR') >= 0) $('#productSetupUpdateMsg').html(response.replace('ERROR', '')).css({'color' : 'red'});
             else $('#productSetupUpdateMsg').html(response.replace('success', 'Updated')).css({'color' : 'green'});
         }
@@ -358,7 +312,6 @@ export function ajaxUpdateProductTariff(parameter, newValue){
             value: newValue
         },
         success: function(response){
-            //console.log(response)
             newValue = newValue[0] == '.' ? newValue.replace('.', '0.') : newValue
             var valueWasChanged = true;
             if(response.indexOf('value-was-not-changed') > 0) { 
@@ -388,9 +341,40 @@ export function ajaxSetProductPremiumPartOptions(){
                     id[0] = id[0].trim() 
                     $("#select_"+id[0].trim()).val(id[1]).change();
                 }
-            } else {
-                alert('ajaxSetProductPremiumPartOptions ERROR') // need to handle differently
-            }
+            } else alert('ajaxSetProductPremiumPartOptions ERROR') // need to handle differently
+        }
+    })
+}
+
+export function ajaxFindCustomerBySerial(customerSerial){
+    $.ajax({
+        url: currentLink, method: 'GET', data: { findCustomer: customerSerial},
+        success: function(response){
+            if(response){
+                $('#customerDialog > button').css(response.indexOf('Customer not found') < 0 ? {'display' : 'block'} : {'display' : 'none'})
+                $('#customerDialogSpanRes').html(response)
+            }else alert('ajaxFindCustomerBySerial error') // need to handle properly
+        }
+    })
+}
+
+export function ajaxUpdateCustomerOnCurrentPolicy(customerSerial){
+    $.ajax({
+        url: currentLink, method: 'GET', data: { setNewCustomer: customerSerial},
+        success: function(response){
+            if(response.indexOf('ERROR') < 0){
+                var customerDetails = response.split(':');
+                customerDetails[0] = customerDetails[0].trim()
+                $('#custSerial').val(customerDetails[0])
+                $('#custName').html(customerDetails[1])
+                $('#custSurname').html(customerDetails[2])
+                $('#custEmail').html(customerDetails[3])
+                $('#custAddress').html(customerDetails[4])
+                $('#custBirthdate').html(customerDetails[5].indexOf('00-00') < 0 ? customerDetails[5] + ' (' + calculateAge(new Date(customerDetails[5].split("-").reverse().join("-"))) + ' yo)' 
+                    : '<small>Not specified</small>')
+                $('#custStatus').html(customerDetails[6] == 'Blacklisted' ? '<b style="color: red;">Blacklisted</b>' : customerDetails[6])
+                $('#customerDialogMsg').html('Save policy in order to change the policyholder!').css({'color' : 'red', 'text-align' : 'center'})
+            }else alert('ajaxUpdateCustomerOnPolicy error')
         }
     })
 }
