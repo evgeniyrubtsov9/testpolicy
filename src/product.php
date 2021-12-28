@@ -74,7 +74,7 @@
                 <?php 
                     $sqlGetProduct = ' select name, 
                                               commercial_description cm, 
-                                              valid_from vf, 
+                                              valid_from vf,
                                               valid_to vt, 
                                               status prod_status, 
                                               changed_when cw, 
@@ -103,13 +103,13 @@
                             <div class="form-group">
                                 <label class="col-md-4 control-label" for="product_valid_from">Valid From</label>
                                 <div class="col-md-4">
-                                    <input id="product_valid_from" name="product_valid_from"  class="form-control input-md" type="date" value='.$row['vf'].'> 
+                                    <input id="product_valid_from" name="product_valid_from"  class="form-control input-md" type="date" value='.date_format(date_create($row['vf']), 'Y-m-d').'> 
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-md-4 control-label" for="product_valid_to">Valid To</label>
                                 <div class="col-md-4">
-                                    <input id="product_valid_to" name="product_valid_to" class="form-control input-md" type="date" value='.$row['vt'].'> 
+                                    <input id="product_valid_to" name="product_valid_to" class="form-control input-md" type="date" value='.date_format(date_create($row['vt']), 'Y-m-d').'> 
                                 </div>
                             </div>
                             <div class="form-group">

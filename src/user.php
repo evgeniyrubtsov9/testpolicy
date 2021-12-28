@@ -1,4 +1,5 @@
 <?php
+phpinfo();
     session_start();
     include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
     include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');

@@ -26,6 +26,17 @@ export function validateName(name){
 }
 /**
  * 
+ * @param {Date} date - date object 
+ * @return {String} date in String format (mm-dd-yyyy)
+ */
+export function dateToFormatDayMonthYear(date){
+    if(!date instanceof Date && date.getTime()) return;
+    return (date.getDate().toString().length == 1 ? '0'+date.getDate() : date.getDate()) 
+            + "-" + ((date.getMonth() + 1).toString().length == 1 ? ('0'+(date.getMonth() + 1)) : (date.getMonth() + 1))
+            + "-" + date.getFullYear() 
+}
+/**
+ * 
  * @param {Date} birthday - person's date of birth 
  * @returns {Number} age - person's calculated age
  */

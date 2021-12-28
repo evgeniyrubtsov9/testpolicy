@@ -33,8 +33,8 @@
             // remove white spaces from both ends of string. Is important, bc check explode() function inside validateProductSetup() 
             $productName = $_POST['product_name'] != '' ? trim($_POST['product_name']) : $_POST['product_name']; 
             $productCommercialDescription = $_POST['product_cd'] != '' ? trim($_POST['product_cd']) : $_POST['product_cd'];
-            $productValidFrom = $_POST['product_valid_from'];
-            $productValidTo = $_POST['product_valid_to'];
+            $productValidFrom = $_POST['product_valid_from'] != '' ? date_format(date_create($_POST['product_valid_from']), "d-m-Y") : null;
+            $productValidTo = $_POST['product_valid_to'] != '' ? date_format(date_create($_POST['product_valid_to']), "d-m-Y") : null;
             $productStatus = $_POST['product_status'];
             $validation = validateProductSetup($connection, $productName, $productCommercialDescription, $productValidFrom);
             $sqlUpdateProductSetup = $connection->prepare("

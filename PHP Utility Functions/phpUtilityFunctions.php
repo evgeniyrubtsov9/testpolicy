@@ -223,21 +223,20 @@
                                             ' :: [' . $rowLog['username'] . '] :: ' . 
                                                       $rowLog['log_data'] . "\n";
                         }
-                        $file = 'scriptLog.txt';
-                        $handle = fopen($file, "w");
-                        fwrite($handle, $returnLogData); // open a new file and put the data inside 
-                        fclose($handle);
-                        header('Content-Description: Script Log text file download');
-                        header('Content-Type: application/octet-stream'); // content type "application/octet-stream" is a binary file
-                        header('Content-Disposition: attachment'); // attachment means it will be downloaded and saved locally, but not on the web page 
-                        header('Content-Length: ' . filesize($file)); // size of the message body in bytes
-                        readfile($file); // read the file and write it to the output buffer
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'Downloaded the log file. ReturnMsg: '.getReturnMessage('success'));
-                        exit(); // no need to exist with anything, since ajax will get everything, what did the GET request in php
-                    } else {
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'The log file is empty! ReturnMsg: '.getReturnMessage('downloadLogFail'));
-                        exit(getReturnMessage('downloadLogFail'));
-                    }
+                    } 
+                    $file = 'scriptLog.txt';
+                    $handle = fopen($file, "w");
+                    fwrite($handle, $returnLogData); // open a new file and put the data inside 
+                    fclose($handle);
+                    header('Content-Description: Script Log text file download');
+                    header('Content-Type: application/octet-stream'); // content type "application/octet-stream" is a binary file
+                    header('Content-Disposition: attachment'); // attachment means it will be downloaded and saved locally, but not on the web page 
+                    header('Content-Length: ' . filesize($file)); // size of the message body in bytes
+                    readfile($file); // read the file and write it to the output buffer
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), 'Downloaded the log file. ReturnMsg: '.getReturnMessage('success'));
+                    exit(); // no need to exist with anything, since ajax will get everything, what did the GET request in php
+                    // scriptLog($connection, $processName, getLoggedInUsername($connection), 'The log file is empty! ReturnMsg: '.getReturnMessage('downloadLogFail'));
+                    // exit(getReturnMessage('downloadLogFail'));
                 }
             }
         }

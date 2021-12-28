@@ -45,7 +45,6 @@ export function ajaxAddOrUpdateCustomer(key, name, surname, email, address, date
             },
             dataType: 'text',
             success: function(response){
-                console.log(response)
                 if(response.indexOf('ERROR') < 0) window.location = 'index'
                 else $('#custReturnMsg').html(response.replace('ERROR', '')).css({'display' : 'block'})
             }
@@ -136,7 +135,7 @@ export function ajaxLogResult(link, datetime, name, username, logData){
 export function ajaxClearLogfile(){
     $.ajax({
         url: currentLink, method: 'POST', data: { clearLogfile: 1 }, 
-        success: function(response){ if(response.indexOf('success') >= 0) ajaxGetLogData(); console.log(response); }, // load the log table from database after clearing the log
+        success: function(response){ if(response.indexOf('success') >= 0) ajaxGetLogData(); }, // load the log table from database after clearing the log
         dateType: 'text'
     })
 }
@@ -242,7 +241,6 @@ export function ajaxAuthenticateUser(username, password){
                 passwordPHP: password 
             },
             success: function(response){
-                console.log(response);
                 if(response.indexOf('success') >= 0){
                     $('#auth_response').html('Signing in...').css({'color' : 'green'})
                     window.location = currentLink; // redirect into the system in case of successful response
@@ -377,4 +375,22 @@ export function ajaxUpdateCustomerOnCurrentPolicy(customerSerial){
             }else alert('ajaxUpdateCustomerOnPolicy error')
         }
     })
+}
+
+export function ajaxSendPolicyFormData(formData){
+    $('.loadingSymbol').css({'display':'inline-block'})
+    $.ajax({
+        url: currentLink, method: 'POST', data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response){
+            console.log(response)
+            if(response.indexOf('ERROR') < 0){
+                //$('#policyReturnMsg').html(response).css({'color':'green', 'font-weight' : 'bold'});
+                //window.location = currentLink
+            }else {
+                $('#policyReturnMsg').html('Output :: ' + response.replace('ERROR', '')).css({'color' : 'red', 'font-weight' : 'bold'});
+            }
+        }
+    }).done(function(){ $('.loadingSymbol').css({'display':'none'})})
 }
