@@ -404,8 +404,8 @@ export function ajaxSendPolicyFormData(formData){
     }).done(function(){ $('.loadingSymbol').css({'display':'none'})})
 }
 
-export function ajaxRetrieveSelectedUser(flag, username){
-    if(flag){
+export function ajaxRetrieveSelectedUser(updateUserFlag, username){
+    if(updateUserFlag){
         $.ajax({
             url: currentLink, method: 'GET', data: { userSelected: username }, dataType: 'text',
             success: function(response){
@@ -419,6 +419,10 @@ export function ajaxRetrieveSelectedUser(flag, username){
                     console.log('Logged In User: ' + $('#loggedInUser').html().trim())
                     if(userDetails[2] == 'Administrator' && userDetails[1] == $('#loggedInUser').html().trim()) $('#role').attr('disabled', true)
                     else $('#role').attr('disabled', false)
+                    if(userDetails[2] == 'Subagent' && userDetails[1] == $('#loggedInUser').html().trim()) {
+                        $('#role option[value="Administrator"]').attr('disabled', true);
+                        $('#role option[value="Blocked"]').attr('disabled', true);
+                    }
                     $('#email').val(userDetails[3])
                     $('#outputMsg').html(null)
                     $('#update_user').html('Update profile')
@@ -427,7 +431,7 @@ export function ajaxRetrieveSelectedUser(flag, username){
                 }
             }
         })
-    }else {
+    } else { // else add a new user
         $('#fullname').val(null)
         $('#username').val(null)
         $('#email').val(null)
@@ -489,7 +493,7 @@ export function ajaxUpdateUserProfile(customerForm){
         success: function(response){
             console.log(response)
             if(response.indexOf('ERROR') < 0){
-               // window.location = 'user'
+               window.location = currentLink
             } else {
                 $('#outputMsg').html(response.replace('ERROR', ''))
             }

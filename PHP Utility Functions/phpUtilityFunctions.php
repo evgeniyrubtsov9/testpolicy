@@ -370,7 +370,7 @@
             'updCustumerFail' => 'ERROR Function failed to update customer',
             'keyFail' => 'ERROR Incorrect key was passed to the function',
             'emptyList' => 'ERROR Function failed to find customers in the database',
-            'userBlocked' => 'Too many login attempts. Your account is blocked. Please contact Administrator',
+            'userBlocked' => 'Too many login attempts or your account is blocked. Please contact Administrator',
             'securCodeActive' => 'AC-ERROR Security code was already sent. It\'s active for 30 minutes. Check email: ',
             'noUserEmail' => 'ERROR User exists, but email is not found. Please contact Administrator',
             'incorrectSecurityCode' => 'ERROR Incorrect security code was provided',
@@ -413,6 +413,8 @@
     }
 
     if(isset($_POST['user_form'])){
+        // retrieve variables and do some validations 1) for unique username 2) for unique email
+        $processName = 'USER PROFILE ADD OR UPDATE';
         $selectedUser = $_SESSION['selectedUsername'];
         $username = $_POST['username'] != '' ? trim($_POST['username']) : $_POST['username'];
         $fullname = $_POST['fullname'];
@@ -432,21 +434,26 @@
                 exit('ERROR Please provide unique username');
             }
         }
-        $sqlCheckUniqueEmail = $connection->query("select username from user where email = '$email'");
-        if($sqlCheckUniqueEmail->num_rows > 0){
-            $row = $sqlCheckUniqueEmail->fetch_assoc();
-            if($row['username'] != $selectedUser){
-                scriptLog($connection, $processName, getLoggedInUsername($connection), 'ERROR Please provide unqie email');
-                exit('ERROR Please provide unqie email');
+        if(!empty($email)){
+            $sqlCheckUniqueEmail = $connection->query("select username from user where email = '$email'");
+            if($sqlCheckUniqueEmail->num_rows > 0){
+                $row = $sqlCheckUniqueEmail->fetch_assoc();
+                if($row['username'] != $selectedUser){
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), 'ERROR Please provide unqie email');
+                    exit('ERROR Please provide unqie email');
+                }
             }
         }
         $addNewUserFlag = $_POST['addNew'];
+        // ---------------------------------------------------------------------------------------
         if(trim($addNewUserFlag) == 'addNew'){ // add user profile
             $processName = "ADD NEW USER";
-
-
-
-
+            $sqlAddNewUser = $connection->prepare("insert into user (username, password, full_name, role_code, created, created_by) values (?,?,?,?,now(),?)");
+            $password = sha1(trim($_POST['password']));
+            $sqlAddNewUser->bind_param('sssss', $username, $password, $fullname, $role, getLoggedInUsername($connection));
+            if($sqlAddNewUser->execute()){
+                exit('success');
+            }
         }else { // update user profile
             $processName = "USER PROFILE UPDATE";
             $changePasswordFlag = $_POST['changePasswordFlag'];
@@ -459,7 +466,11 @@
                 $sqlUpdateUser->bind_param('ssssss', $password, $username, $fullname, $email, $role, $selectedUser);
             }
             if($sqlUpdateUser->execute()){
-                scriptLog($connection, $processName, getLoggedInUsername($connection), "Administrator updated <b>$username</b> profile");
+                if(trim($selectedUser) == trim(getLoggedInUsername($connection))){
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Updated personal profile");
+                } else {
+                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Administrator updated <b>$username</b> profile");
+                }
                 exit(getReturnMessage('success'));
             }else {
                 scriptLog($connection, $processName, getLoggedInUsername($connection), getReturnMessage('dbError'));
