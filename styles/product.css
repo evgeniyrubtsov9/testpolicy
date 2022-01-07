@@ -27,3 +27,8 @@ a {
 .downloadFile {
     display: none;
 }
+
+td {
+    border-top: 0;
+    padding: 5px;
+}

@@ -1,5 +1,7 @@
 import { localDatetime, loggedInUser } from "./JS Customer Functions.js"; // import necessary functions and variables from main.js
-import { ajaxLogResult, ajaxGetLogData, ajaxClearLogfile, ajaxDownloadLogFile, ajaxUploadProductDocuments, ajaxUpdateProductSetup, ajaxUpdateProductTariff,
+import { ajaxLogResult, ajaxGetLogData, 
+    ajaxRetrieveSelectedUser, ajaxClearLogfile, ajaxDownloadLogFile, 
+    ajaxUploadProductDocuments, ajaxUpdateProductSetup, ajaxUpdateProductTariff, ajaxUpdateUserProfile,
         ajaxSetProductPremiumPartOptions } from "./JS Ajax Functions.js";
 var link = document.location.href;
 link = link.split('/');
@@ -70,6 +72,7 @@ export function validateEmail(email) {
 }
 function setInputIDforTarriff(object, tariffName){
     var inputId = $(object).attr('id')
+    console.log(inputId)
     if(!isNullSafe(inputId)){ // move forward only if the input element has not received ID previosly
         if(tariffName == 'tableMaxAge'){
             var rowIndex = $(object).closest("tr").index();
@@ -105,6 +108,16 @@ function setInputIDforTarriff(object, tariffName){
             if(inputNumberInRow == 0) $(object).attr('id', tariffName+(rowIndex >=0 && rowIndex <= 2 ? '_value_1_'+returnCoverName(rowIndex) : '_value_2_'+returnCoverName(rowIndex)))
             return;
         }
+        if(tariffName == 'tablePolicyParams'){
+            var rowIndex = $(object).closest("tr").index();
+            function returnPostfix(number){
+                if(number == 0 || number == 2) return 'first'
+                if(number == 1 || number == 3) return 'second'
+                if(number == 4) return 'third'
+                if(number == 5) return 'fourth'
+            }
+            if(rowIndex >= 0 && rowIndex <= 5) $(object).attr('id', tariffName+'_value_'+rowIndex+'_'+returnPostfix(rowIndex))
+        }
     }
 }
 /**
@@ -114,10 +127,10 @@ function setInputIDforTarriff(object, tariffName){
  */
 export function checkPasswordStrengthAndReturnScore(password){
     var score = 0;
-    if (!password) return score; // return score (= 0), if password is not specified in function params
+    if (!password) return 'weak';
     var letters = new Object();
-    for (var i=0; i<password.length; i++) {// award every unique letter until 5 repetitions
-        if(letters[password[i]]) letters[password[i]]++;// add letters from password to the letters object as keys and it's number of occurs as values. I.e aabc => {'a':2, 'b':1, 'c':1} 
+    for (var i=0; i < password.length; i++) { // 1) award every unique symbol 2) award a [5 / times the non-unique symbol appeared ] each next non unique letter 
+        if(letters[password[i]]) letters[password[i]]++; // add letters from password to the letters object as keys and it's number of occurs as values. I.e aabc => {'a':2, 'b':1, 'c':1} 
         else letters[password[i]] = 1;
         score += 5 / letters[password[i]];
     }
@@ -132,9 +145,11 @@ export function checkPasswordStrengthAndReturnScore(password){
         variationCount += (variations[check] == true) ? 1 : 0; // count variations in the given password
     }
     score += (variationCount - 1) * 10; // 10 points for each variation
+    console.log('Password strenth score: ' + score)
     if (score > 80) return "strong";
     if (score > 60) return "good";
     if (score >= 30) return "weak";
+    else return 'weak';
 }
 
 export function showImageBasedOnInput(input) { // function to show the image on the page after user has uploaded it
@@ -168,7 +183,7 @@ export function invokeBasicCustomerSetupFunctions(){
  */
 export function invokeBasicProductSetupFunctions(){
     ajaxSetProductPremiumPartOptions();
-    $("#tableMaxAge, #tableBMI, #tableBaseRates, #tableSumInsured").find("input").on('focus', function(){ 
+    $("#tableMaxAge, #tableBMI, #tableBaseRates, #tableSumInsured, #tablePolicyParams").find("input").on('focus', function(){ 
         var tariffTableId = $(this).closest('table').attr('id')
         setInputIDforTarriff(this, tariffTableId); // use the function to create appropriate IDs for table's input when user focused the given input
     })
@@ -186,3 +201,22 @@ export function invokeBasicProductSetupFunctions(){
         tableBMIinputs.each(function() { tableBMIinputs.attr('onKeyPress', 'if(this.value.length==5) return false;')}) 
     }
 }
+
+$('.username').on('click', function() {
+    ajaxRetrieveSelectedUser(true, $(this, '.username').html().trim()) 
+})
+$('#addNewUser').on('click', function() {
+    ajaxRetrieveSelectedUser(false) 
+})
+$('#loggedInUser').on('click', function() {
+    ajaxRetrieveSelectedUser(true, $(this, '#loggedInUser').html().trim()) 
+})
+$('#user_form').submit(function(event){ // prevent page reloading and run the function on form submit 
+    event.preventDefault();
+    $('#loggedInUsername').val($(this, '.username').html().trim())
+    var changePasswordFlag = $("#change_password").prop('checked');
+    if($('#update_user').html().trim() == 'Add') $('#addNew').val('addNew'); else $('#addNew').val(null)
+    if(changePasswordFlag) $("#changePasswordFlag").val("true"); else $("#changePasswordFlag").val("false");
+    ajaxUpdateUserProfile(new FormData(this));
+})
+$('update_user').on('click', function(){ $('#user_form').submit() })

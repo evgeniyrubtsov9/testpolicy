@@ -1,4 +1,4 @@
-td > input {
+td > input :not(#user_form) {
     width: 50px;
     text-align: center;
 }
@@ -13,14 +13,44 @@ input::-webkit-inner-spin-button { /* remove arrows (down/up) for input type = n
   -webkit-appearance: none;
   margin: 0;
 }
-.form-control {
+.form-control{
     width: 120px; 
     display: inline;
 }
-td {
+#tableBaseRates > tbody > tr > td{
     text-align: center;
 }
-tr:hover {
+#tableMaxAge > tbody > tr > td{
+    text-align: center;
+}
+#tableBMI > tbody > tr > td{
+    text-align: center;
+}
+#tableSumInsured > tbody > tr > td{
+    text-align: center;
+}
+#tablePolicyParams > tbody > tr > td{
+    text-align: center;
+}
+tr:not(#user_form > table > td > tr > input):hover{
+    background-color: gold;
+}
+#tableBaseRates > tbody > tr > td > input{
+    text-align: center;
+}
+#tableMaxAge > tbody > tr > td > input{
+    text-align: center;
+}
+#tableBMI > tbody > tr > td > input{
+    text-align: center;
+}
+#tableSumInsured > tbody > tr > td> input{
+    text-align: center;
+}
+#tablePolicyParams > tbody > tr > td> input{
+    text-align: center;
+}
+tr:not(#user_form):hover{
     background-color: gold;
 }
 #productSetup {
@@ -28,7 +58,7 @@ tr:hover {
     color: black;
     line-height: 20px;
 }
-th {
+th:not(#user_form){
     text-align: center;
 }
 tbody {
@@ -36,4 +66,13 @@ tbody {
 }
 thead {
     border-style: solid;
+}
+#user_form > table > tbody > tr > td {
+    border-top: 0;
+    padding: 5px;
+    text-align: left;
+}
+#user_form > table {
+    border-collapse: unset;
+    justify-content: left;
 }

@@ -186,7 +186,7 @@
                 <table id='tablePolicyParams' class='table table-bordered' >
                     <label>Policy parameters: Cancer, Extreme sports, Smoker status tariff</label>
                     <div class="loadingSymbol"></div>
-                    <span id='tablePolicyParamsMsg'></span>      
+                    <span id='tablePolicyParamsMsg' style="display: inline-block;"></span>      
                     <p></p>     
                     <thead>
                         <tr>
@@ -196,33 +196,45 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <?php 
+                            $sql = "select value_first, value_second from tariff_sport_smoker where name = 'Extreme sports'";
+                            $sqlTariffPolicyParams = $connection->query($sql);
+                            if($sqlTariffPolicyParams->num_rows > 0){
+                                $row = $sqlTariffPolicyParams->fetch_assoc();
+                            }
+                        ?>
                         <tr>
                             <td style='vertical-align: middle;' rowspan="2">Extreme sports</td>
                             <td>Yes</td>
-                            <td><input class='form-control' type='number' value='1.75'></input></td>
+                            <td><input class='form-control' type='number' value=<?php echo $row['value_first']?>></input></td>
                         </tr>
                         <tr style='border-bottom: double;'>
                             <td>No</td>
-                            <td><input class='form-control' type='number' value='1'></input></td>
+                            <td><input class='form-control' type='number' value=<?php echo $row['value_second']?>></input></td>
                         </tr>
-
-
+                        <?php 
+                            $sql = "select value_first, value_second, value_third, value_fourth from tariff_sport_smoker where name = 'Smoker status'";
+                            $sqlTariffPolicyParams = $connection->query($sql);
+                            if($sqlTariffPolicyParams->num_rows > 0){
+                                $row = $sqlTariffPolicyParams->fetch_assoc();
+                            }
+                        ?>
                         <tr>
                             <td style='vertical-align: middle;' rowspan="4">Smoker status</td>
                             <td>Never</td>
-                            <td><input class='form-control' type='number' value='1'></input></td>
+                            <td><input class='form-control' type='number' value=<?php echo $row['value_first']?>></input></td>
                         </tr>
                         <tr>
                             <td>Not now</td>
-                            <td><input class='form-control' type='number' value='1.2'></input></td>
+                            <td><input class='form-control' type='number' value=<?php echo $row['value_second']?>></input></td>
                         </tr>
                         <tr>
                             <td>Less than 40 cigs a day</td>
-                            <td><input class='form-control' type='number' value='1.5'></input></td>
+                            <td><input class='form-control' type='number' value=<?php echo $row['value_third']?>></input></td>
                         </tr>
                         <tr>
                             <td>More than 40 cigs a day</td>
-                            <td><input class='form-control' type='number' value='1.75'></input></td>
+                            <td><input class='form-control' type='number' value=<?php echo $row['value_fourth']?>></input></td>
                         </tr>
                     <tbody>
                 </table>

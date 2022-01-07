@@ -106,7 +106,7 @@
     }
 
     function verifyAdministrator(){
-        if(!isset($_SESSION['admin'])){
+        if(!isset($_SESSION['admin']) && !isset($_GET['current'])){
             header('Location: index');
             exit();
         }
@@ -218,10 +218,12 @@
                     $sqlLog = $connection->query("select datetime, name, username, log_data from log");
                     if($sqlLog->num_rows > 0){
                         while($rowLog = $sqlLog->fetch_assoc()){
+                            $resultedLogData = str_replace('<b>', '', $rowLog['log_data']);
+                            $resultedLogData = str_replace('</b>', '', $resultedLogData);
                             $returnLogData .= $rowLog['datetime'] .      // fetching data into returnLogData
                                             ' :: [' . $rowLog['name'] . ']' . 
                                             ' :: [' . $rowLog['username'] . '] :: ' . 
-                                                      $rowLog['log_data'] . "\n";
+                                            $resultedLogData . "\n";
                         }
                     } 
                     $file = 'scriptLog.txt';
@@ -234,9 +236,7 @@
                     header('Content-Length: ' . filesize($file)); // size of the message body in bytes
                     readfile($file); // read the file and write it to the output buffer
                     scriptLog($connection, $processName, getLoggedInUsername($connection), 'Downloaded the log file. ReturnMsg: '.getReturnMessage('success'));
-                    exit(); // no need to exist with anything, since ajax will get everything, what did the GET request in php
-                    // scriptLog($connection, $processName, getLoggedInUsername($connection), 'The log file is empty! ReturnMsg: '.getReturnMessage('downloadLogFail'));
-                    // exit(getReturnMessage('downloadLogFail'));
+                    exit(); // no need to exit with anything, since AJAX GET request will get everything what PHP answered
                 }
             }
         }
@@ -375,9 +375,11 @@
             'noUserEmail' => 'ERROR User exists, but email is not found. Please contact Administrator',
             'incorrectSecurityCode' => 'ERROR Incorrect security code was provided',
             'pwNotChanged' => 'ERROR Password was not changed. Please contact Adminsitrator',
+
             'imgExt' => 'ERROR Incorrect image extension. Server allows only PNG, JPG, JPEG!',
             'fileExt' => 'ERROR Incorrect file extension. Server allows only PDF, DOC, DOCX!',
             'fileSize' => 'ERROR File size is greater than 25 MB or the file is empty!',
+            
             'dbError' => 'ERROR Database error. Contact Administrator!',
             'prodNameLength' => 'ERROR Product name/description length issue!',
             'prodNameLD' => 'ERROR Product name/description should contain only letters/digits!',
@@ -393,6 +395,77 @@
             foreach($returnMessages as $key=>$value)
                 if($keyValue == $key) 
                     return $value;
+    }
+
+    if(isset($_GET['userSelected'])){
+        $username = $_GET['userSelected'];
+        $_SESSION['selectedUsername'] = $_GET['userSelected'];
+        $sqlGetUserDetails = $connection->query("select email, full_name, (select role from user_roles where code = role_code) role from user where username = '$username'");
+        if($sqlGetUserDetails->num_rows > 0){
+            $row = $sqlGetUserDetails->fetch_assoc();
+            $role = $row['role'];
+            $fullname = $row['full_name'];
+            $email = $row['email'];
+            exit($fullname.':'.$username.':'.$role.':'.$email);
+        } else {
+            exit(getReturnMessage('dbError'));
+        }
+    }
+
+    if(isset($_POST['user_form'])){
+        $selectedUser = $_SESSION['selectedUsername'];
+        $username = $_POST['username'] != '' ? trim($_POST['username']) : $_POST['username'];
+        $fullname = $_POST['fullname'];
+        $email = $_POST['email'] != '' ? trim($_POST['email']) : $_POST['email'];
+        $role = $_POST['role'];
+        if(!empty($role)){
+            if($role == 'Administrator') $role = '0';
+            if($role == 'Subagent') $role = '1';
+            if($role == 'Blocked') $role = '4';
+        } else $role = '0';
+        if($username == '') exit('ERROR Please fill all mandatory fields');
+        $sqlCheckUniqueUsername = $connection->query("select username from user where username = '$username'");
+        if($sqlCheckUniqueUsername->num_rows > 0){
+            $row = $sqlCheckUniqueUsername->fetch_assoc();
+            if($row['username'] != $selectedUser) {
+                scriptLog($connection, $processName, getLoggedInUsername($connection), 'ERROR Please provide unique username');
+                exit('ERROR Please provide unique username');
+            }
+        }
+        $sqlCheckUniqueEmail = $connection->query("select username from user where email = '$email'");
+        if($sqlCheckUniqueEmail->num_rows > 0){
+            $row = $sqlCheckUniqueEmail->fetch_assoc();
+            if($row['username'] != $selectedUser){
+                scriptLog($connection, $processName, getLoggedInUsername($connection), 'ERROR Please provide unqie email');
+                exit('ERROR Please provide unqie email');
+            }
+        }
+        $addNewUserFlag = $_POST['addNew'];
+        if(trim($addNewUserFlag) == 'addNew'){ // add user profile
+            $processName = "ADD NEW USER";
+
+
+
+
+        }else { // update user profile
+            $processName = "USER PROFILE UPDATE";
+            $changePasswordFlag = $_POST['changePasswordFlag'];
+            if($changePasswordFlag == 'false'){
+                $sqlUpdateUser = $connection->prepare("update user set username = ?, full_name = ?, email = ?, role_code = ? where username = ?");
+                $sqlUpdateUser->bind_param('sssss', $username, $fullname, $email, $role, $selectedUser);
+            }else {
+                $password = sha1($_POST['password']);
+                $sqlUpdateUser = $connection->prepare("update user set password = ?, username = ?, full_name =?, email = ?, role_code = ? where username = ?");
+                $sqlUpdateUser->bind_param('ssssss', $password, $username, $fullname, $email, $role, $selectedUser);
+            }
+            if($sqlUpdateUser->execute()){
+                scriptLog($connection, $processName, getLoggedInUsername($connection), "Administrator updated <b>$username</b> profile");
+                exit(getReturnMessage('success'));
+            }else {
+                scriptLog($connection, $processName, getLoggedInUsername($connection), getReturnMessage('dbError'));
+                exit(getReturnMessage('dbError'));
+            }
+        }
     }
 ?>
 

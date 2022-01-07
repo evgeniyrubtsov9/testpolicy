@@ -5,11 +5,22 @@
  * Description: Library stores Customer related functions
  */
 import { validateEmail, validateName, retrieveCustomerId, isNullSafe, currentLink, invokeBasicCustomerSetupFunctions } from "./JS Utility Functions.js";
-import { ajaxAddOrUpdateCustomer, ajaxRemoveCustomer, ajaxGetLogData, ajaxDownloadLogFile, ajaxLogResult, ajaxClearLogfile } from "./JS Ajax Functions.js";
+import { ajaxAddOrUpdateCustomer, ajaxRemoveCustomer, ajaxGetLogData, ajaxDownloadLogFile,ajaxRetrieveSelectedUser, ajaxLogResult, ajaxClearLogfile } from "./JS Ajax Functions.js";
 export var localDatetime = new Date().toLocaleString('sv-SE'); // date in format YYYY-MM-DD h:m:s
 export var loggedInUser = isNullSafe($('#loggedInUser').html()) ? $('#loggedInUser').html().trim() : 'User not authenticated yet'; // used in the ajaxLogResult
 $('#dataTable').toggle()
 $(document).ready(function() {
+    // $('#loggedInUser').on('click', function() {
+    //     ajaxRetrieveSelectedUser($(this, '#loggedInUser').html().trim()) 
+    // })
+    // $('#user_form').submit(function(event){ // prevent page reloading and run the function on form submit 
+    //     event.preventDefault();
+    //     var customerForm = new FormData(this)
+    //     ajaxUpdateUserProfile(customerForm);
+    // })
+    // $('update_user').on('click', function(){
+    //     $('#user_form').submit();
+    // })
     invokeBasicCustomerSetupFunctions();
     $(".add-new").click(function(){ // ----------------------- Append a new row to the table on 'Add new' button click start -----------------------
         $('#dataTable_filter > label > input').attr("disabled", "disabled")
@@ -18,7 +29,8 @@ $(document).ready(function() {
         $(this).attr("disabled", "disabled"); // disable 'Add new' button until a new row wouldn't be added
         $("#btnExportCustomersToXls").attr("disabled", "disabled");
         $(document).find('.edit, .delete').toggle(); // disable edit and delete buttons for other rows except current
-        var action = $("table td:last-child").html(); // in this case last child contains 'add' button
+        var action = $("#dataTable td:last-child").html(); // in this case last child contains 'add' button
+        console.log(action)
         var rowPart1 = '<tr> \
                             <td></td> \
                             <td><input type="text" class="form-control" name="name"></td> \
@@ -45,7 +57,7 @@ $(document).ready(function() {
                                 </select> \
                             </td> \
                             <td><input type="text" class="form-control" name="flex_text_1""></td> \
-                            <td>' + action + '</td> \
+                            //<td>' + action + '</td> \
                         </tr>';
         $.ajax({
             url: 'index',

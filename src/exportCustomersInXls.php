@@ -8,8 +8,8 @@
     include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
     include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     verifyIfUserIsLoggedIn();
-    $fileName = "customers_" . getLoggedInUsername($connection) . "_" . date('Y-m-d H:i:s', time()) . ".xls"; // Excel file name with xls extenstion for download 
-    $fields = array('Serial', 'Name', 'Surname', 'Email', 'Address', 'Date of Birth', 'Country', 'Gender', 'Status', 'Created By', 'Changed By', 'Flex Text 1'); // Column names 
+    $fileName = "customers_" . getLoggedInUsername($connection) . "_" . date('Y-m-d H:i:s', time()) . ".xls"; // Excel file name with xls extension for download 
+    $fields = array('Serial', 'Name', 'Surname', 'Email', 'Address', 'Date of Birth', 'Country', 'Gender', 'Status', 'Created By', 'Changed By', 'ID #'); // Column names 
     $excelData = implode("\t", array_values($fields)) . "\n"; // Display column names as first row 
     $sqlCustomers = ' select *, 
                         cust.name as customerName, 
@@ -47,5 +47,5 @@
     header("Content-Type: application/vnd.ms-excel"); // Headers for download xls
     header("Content-Disposition: attachment; filename=\"$fileName\""); // attachment means it will be downloaded and saved locally, but not on the web page
     scriptLog($connection, "DOWNLOAD CUSTOMER XLS", getLoggedInUsername($connection), getReturnMessage('success') . ' customers list contains at least 1 customer'); 
-    exit($excelData); // exit from the session with the file
+    exit($excelData); // important to exit from the session with the file
 ?>

@@ -95,7 +95,7 @@
             }
             exit(getReturnMessage('dbError'));
         }
-        else if($policyAction == 'calculate'){
+        else if($policyAction == 'calculate'){ // action calculate
             if($endDate == '' || $startDate == '') exit('ERROR Please populate policy Start / End dates');
             $sqlUpdatePolicyRecord = $connection->prepare("update policy set calculated = 1 where id = ?");
             $sqlUpdatePolicyRecord->bind_param('s', $policySerial);
@@ -103,14 +103,14 @@
                 exit(getReturnMessage('success'));
             }
             exit(getReturnMessage('dbError'));
-        }else if($policyAction == 'cancel'){
+        }else if($policyAction == 'cancel'){ // action cancel
             if($cancelRegDate == '' || $effectiveCancelRegDate == '' || $terminationCause == '') exit('ERROR Please populate policy Cancel dates and Termination cause');
             $sqlCancelPolicy = $connection->prepare("update policy set status = 'Canceled', cancel_reg_date = ?, effective_reg_date = ?, 
                 termination_cause = ?  where id = ?");
             $sqlCancelPolicy->bind_param('ssss', $cancelRegDate, $effectiveCancelRegDate, $terminationCause, $policySerial);
             if($sqlCancelPolicy->execute()) exit('success');
             exit(getReturnMessage('dbError'));
-        }else if($policyAction == 'activate'){
+        }else if($policyAction == 'activate'){ // action activate
             $sqlCheckIfPolicyCalculated = $connection->query("select calculated from policy where id = $policySerial and calculated = 1");
             if($sqlCheckIfPolicyCalculated->num_rows == 0) exit('ERROR Policy is not calculated');
         }
@@ -123,6 +123,9 @@
     <title>Test Policy</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/styles/auth_page.css">
     <link rel="stylesheet" href="/styles/index_page.css">
@@ -379,9 +382,6 @@
         ?>
     </div>
     <?php include_once('footer.php'); ?>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
     <script type="module" src="/JS scripts/JS Ajax Functions.js"></script>
     <script type="module" src="/JS scripts/JS Policy Functions.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>

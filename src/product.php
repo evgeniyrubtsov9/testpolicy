@@ -78,10 +78,7 @@
                                               valid_to vt, 
                                               status prod_status, 
                                               changed_when cw, 
-                                              changed_by cb, 
-                                              gtc_document_id gtc, 
-                                              ipid_document_id ipid, 
-                                              logo_id logo 
+                                              changed_by cb
                                                     from product';
                     $result = $connection->query($sqlGetProduct);
                     if($result->num_rows > 0){
@@ -103,7 +100,7 @@
                             <div class="form-group">
                                 <label class="col-md-4 control-label" for="product_valid_from">Valid From</label>
                                 <div class="col-md-4">
-                                    <input id="product_valid_from" name="product_valid_from"  class="form-control input-md" type="date" value='.date_format(date_create($row['vf']), 'Y-m-d').'> 
+                                    <input id="product_valid_from" name="product_valid_from" class="form-control input-md" type="date" value='.date_format(date_create($row['vf']), 'Y-m-d').'> 
                                 </div>
                             </div>
                             <div class="form-group">
@@ -134,13 +131,13 @@
                             <div class="form-group">
                                 <label class="col-md-4 control-label" for="product_changed_when">Changed When</label>
                                 <div class="col-md-4">
-                                    <input id="" name="product_changed_when" class="form-control" type="text" value="'.$row['cw'].'" readonly>
+                                    <input  name="product_changed_when" class="form-control" type="text" value="'.$row['cw'].'" readonly>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-md-4 control-label" for="product_changed_by">Changed By</label>
                                 <div class="col-md-4">
-                                    <input id="" name="product_changed_by" class="form-control" type="text" value="'.$row['cb'].'" readonly>
+                                    <input name="product_changed_by" class="form-control" type="text" value="'.$row['cb'].'" readonly>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -175,14 +172,14 @@
                       echo '<input id="product_gtc_file" type="file" name="gtc"/>
                             </p>
                         </form>
-                        <form id="form_ipid" method="post" enctype="multipart/form-data">
+                        <!--<form id="form_ipid" method="post" enctype="multipart/form-data">
                             <p><label>Insurance Product Information Document</label>';
                             $sql = $connection->query('select name from files_data where name like "ipid%"');
                             if($sql->num_rows > 0) echo ' <a href="downloadProductDoc?name=ipid">Download</a>';
                             else echo ' <a style="display:none;" href="downloadProductDoc?name=ipid">Download</a>';
                       echo '<input id="product_ipid_file" type="file" name="ipid"/>
                             </p>
-                        </form>
+                        </form>--!>
                         <form id="form_logo" method="post" enctype="multipart/form-data">
                             <p><label>Logo</label>';
                             $sql = $connection->query('select name from files_data where name like "logo%"');

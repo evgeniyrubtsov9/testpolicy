@@ -3,7 +3,6 @@
     include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
     include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
     include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
-    
     verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
 ?>

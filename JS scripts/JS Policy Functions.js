@@ -1,4 +1,4 @@
-import { ajaxFindCustomerBySerial, ajaxUpdateCustomerOnCurrentPolicy, ajaxLogResult, ajaxSendPolicyFormData } from "./JS Ajax Functions.js";
+import { ajaxFindCustomerBySerial, ajaxUpdateCustomerOnCurrentPolicy, ajaxUpdateUserProfile, ajaxLogResult, ajaxSendPolicyFormData, ajaxRetrieveSelectedUser } from "./JS Ajax Functions.js";
 import { loggedInUser } from "./JS Customer Functions.js";
 import { isNullSafe, dateToFormatDayMonthYear } from "./JS Utility Functions.js";
 $(document).ready(function() {
@@ -6,6 +6,17 @@ $(document).ready(function() {
         paging : true, // pagination off
         ordering : false, // ordering off
     })
+    // $('#loggedInUser').on('click', function() {
+    //     ajaxRetrieveSelectedUser($(this, '#loggedInUser').html().trim()) 
+    // })
+    // $('#user_form').submit(function(event){ // prevent page reloading and run the function on form submit 
+    //     event.preventDefault();
+    //     var customerForm = new FormData(this)
+    //     ajaxUpdateUserProfile(customerForm);
+    // })
+    // $('update_user').on('click', function(){
+    //     $('#user_form').submit();
+    // })
     $('#addNewPolicy').on('click', function(){window.location='createNewPolicy'})
     $('#policyTermCause').focus(function () {
         $(this).animate({ height: "300px"}, 200);

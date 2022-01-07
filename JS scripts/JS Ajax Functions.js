@@ -5,7 +5,7 @@
  * Description: Library to store single Ajax functions - GET/POST requests
  */
 import { localDatetime, loggedInUser} from "./JS Customer Functions.js"; // import necessary functions and variables from main.js
-import { isNullSafe, currentLink, calculateAge } from "./JS Utility Functions.js";
+import { isNullSafe, currentLink, calculateAge, validateEmail, checkPasswordStrengthAndReturnScore } from "./JS Utility Functions.js";
 /**
  * 
  * @param {String} key - key for the function to understand what action to perform (add or update)
@@ -289,12 +289,18 @@ export function ajaxUpdateProductSetup(formData){
         }
     }).done(function(){ $('.col-md-4 > .loadingSymbol').css({'display' : 'none'}) }) 
 }
-
+/**
+ * @param {String} parameter - tariff table input id 
+ * @param {String} newValue - tariff table input's new value
+ * @returns nothing in case of inappropriate tariff name found. Otherwise the function doesn't do return
+ */
 export function ajaxUpdateProductTariff(parameter, newValue){
+    console.log('ajaxUpdateProductTariff param: ' + parameter)
+    console.log('ajaxUpdateProductTariff new value: ' + newValue)
     var tariffName = parameter.split('_')[0].replace('table', '') // retrieve tariff/table name out of the parameter
     var loadingSymbolIdentifier;
     var outputMsgIdentifier;
-    if(tariffName != 'BaseRates' && tariffName != 'BMI' && tariffName != 'MaxAge' && tariffName != 'SumInsured'){
+    if(tariffName != 'BaseRates' && tariffName != 'BMI' && tariffName != 'MaxAge' && tariffName != 'SumInsured' && tariffName != 'PolicyParams'){
         alert('Tariff: ' + tariffName + ' not found!');
         return;
     } else {
@@ -303,14 +309,15 @@ export function ajaxUpdateProductTariff(parameter, newValue){
         outputMsgIdentifier = '#table'+tariffName+'Msg';
     }
     $.ajax({
-        url: currentLink, method: 'POST', 
+        url: currentLink, method: 'POST', // currentLink is a global variable for the convenience. Exact page name might be indicated in case of necessity
         data: { 
-            updateTariff: 1, 
+            updateTariff: 1, // later this variable is used to indicate the update tariff action by PHP functionality
             param: parameter, 
             value: newValue
         },
         success: function(response){
-            newValue = newValue[0] == '.' ? newValue.replace('.', '0.') : newValue
+            console.log('Response: ' + response)
+            newValue = newValue[0] == '.' ? newValue.replace('.', '0.') : newValue // do some formation 
             var valueWasChanged = true;
             if(response.indexOf('value-was-not-changed') > 0) { 
                 valueWasChanged = false; 
@@ -322,7 +329,7 @@ export function ajaxUpdateProductTariff(parameter, newValue){
                 $('#'+parameter).css({'border': '1px solid #ccc', 'background-color' : 'unset'})
             } else if(valueWasChanged){
                 response = response.replace('.00', '')
-                $(outputMsgIdentifier).html(' Data not saved.' + response.replace('ERROR', '')).css({'color' : 'red'});
+                $(outputMsgIdentifier).html(' Data not saved.' + response.replace('ERROR', '')).css({'color' : 'red'}); // no need for the user to show 'ERROR' string in response
                 $('#'+parameter).css({'border': '1px solid red', 'background-color': 'rgba(255, 0, 0, 0.2)'})
             }
         }
@@ -376,7 +383,9 @@ export function ajaxUpdateCustomerOnCurrentPolicy(customerSerial){
         }
     })
 }
-
+/**
+ * @param {formData} formData - policy submit form data
+ */
 export function ajaxSendPolicyFormData(formData){
     $('.loadingSymbol').css({'display':'inline-block'})
     $.ajax({
@@ -385,12 +394,105 @@ export function ajaxSendPolicyFormData(formData){
         processData: false,
         success: function(response){
             console.log(response)
-            if(response.indexOf('ERROR') < 0){
+            if(response.indexOf('ERROR') < 0){ // reload the page by redirecting the user to the same page in case of successful response from PHP functionality
                 //$('#policyReturnMsg').html(response).css({'color':'green', 'font-weight' : 'bold'});
-                //window.location = currentLink
+                window.location = currentLink 
             }else {
                 $('#policyReturnMsg').html('Output :: ' + response.replace('ERROR', '')).css({'color' : 'red', 'font-weight' : 'bold'});
             }
         }
     }).done(function(){ $('.loadingSymbol').css({'display':'none'})})
+}
+
+export function ajaxRetrieveSelectedUser(flag, username){
+    if(flag){
+        $.ajax({
+            url: currentLink, method: 'GET', data: { userSelected: username }, dataType: 'text',
+            success: function(response){
+                if(response.indexOf('ERROR') < 0) {
+                    $('#change_password').parent().css('display', 'block') 
+                    var userDetails = response.split(":"); 
+                    console.log('User profile details [array]: ' + userDetails)
+                    $('#fullname').val(userDetails[0])
+                    $('#username').val(userDetails[1])
+                    $('#role').val(userDetails[2]).change()
+                    console.log('Logged In User: ' + $('#loggedInUser').html().trim())
+                    if(userDetails[2] == 'Administrator' && userDetails[1] == $('#loggedInUser').html().trim()) $('#role').attr('disabled', true)
+                    else $('#role').attr('disabled', false)
+                    $('#email').val(userDetails[3])
+                    $('#outputMsg').html(null)
+                    $('#update_user').html('Update profile')
+                    $('#description').html('Update user profile')
+                    $('#userModal').modal('show');
+                }
+            }
+        })
+    }else {
+        $('#fullname').val(null)
+        $('#username').val(null)
+        $('#email').val(null)
+        $('#password').val(null)
+        $('#password_confirm').val(null)
+        $('#outputMsg').html(null)
+        $('#role').val('Administrator').change()
+        $('#change_password').parent().css('display', 'none')
+        $('#update_user').html('Add')
+        $('#description').html('Add new User')
+        $('#userModal').modal('show');
+    }
+
+}
+
+export function ajaxUpdateUserProfile(customerForm){
+    if(isNullSafe($('#email').val())){
+        var email = $('#email').val()
+        var validEmail = validateEmail(email);
+        if(!validEmail) {
+            $('#outputMsg').html('Incorrect email format!');
+            return;
+        }
+    }
+    var changePasswordFlag = $("#change_password").prop('checked');
+    if(changePasswordFlag){
+        var pass = $('#password').val();
+        var passConfirm = $('#password_confirm').val();
+        if(pass != passConfirm) {
+            $('#outputMsg').html('Password not allowed')
+            return;
+        } else {
+            var checkPasswordStrength = checkPasswordStrengthAndReturnScore(pass);
+            console.log(checkPasswordStrength)
+            if(checkPasswordStrength == 'weak'){
+                $('#outputMsg').html('Password not allowed')
+                return;
+            }
+        }
+    }else if($('#update_user').html().trim() == 'Add'){
+        var pass = $('#password').val();
+        var passConfirm = $('#password_confirm').val();
+        if(pass != passConfirm || !isNullSafe(pass) || !isNullSafe(passConfirm)) {
+            $('#outputMsg').html('Password not allowed')
+            return;
+        } else {
+            var checkPasswordStrength = checkPasswordStrengthAndReturnScore(pass);
+            console.log(checkPasswordStrength)
+            if(checkPasswordStrength == 'weak'){
+                $('#outputMsg').html('Password not allowed')
+                return;
+            }
+        }
+    }
+    $.ajax({
+        url: currentLink, method: 'POST', data: customerForm,
+        contentType: false,
+        processData: false,
+        success: function(response){
+            console.log(response)
+            if(response.indexOf('ERROR') < 0){
+               // window.location = 'user'
+            } else {
+                $('#outputMsg').html(response.replace('ERROR', ''))
+            }
+        }
+    })
 }

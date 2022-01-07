@@ -4,7 +4,7 @@
  * Version: 1.0
  * Description: Library stores Product related functions
  */
-import { ajaxLogResult, ajaxUpdateProductTariff, ajaxUploadProductDocuments, ajaxUpdateProductSetup } from "./JS Ajax Functions.js";
+import { ajaxLogResult, ajaxUpdateProductTariff, ajaxUploadProductDocuments,ajaxUpdateUserProfile, ajaxUpdateProductSetup } from "./JS Ajax Functions.js";
 import { currentLink, invokeBasicProductSetupFunctions, showImageBasedOnInput } from "./JS Utility Functions.js";
 $(document).ready(function() {
     invokeBasicProductSetupFunctions();
@@ -18,10 +18,18 @@ $(document).ready(function() {
     $("#product_ipid_file").change(function(){ 
         if(document.getElementById('product_ipid_file').files[0]) $("#form_ipid").submit() 
     });
+    // $('#user_form').submit(function(event){ // prevent page reloading and run the function on form submit 
+    //     event.preventDefault();
+    //     var customerForm = new FormData(this)
+    //     ajaxUpdateUserProfile(customerForm);
+    // })
+    // $('update_user').on('click', function(){
+    //     $('#user_form').submit();
+    // })
     $("#product_gtc_file").change(function(){ 
         if(document.getElementById('product_gtc_file').files[0]) $("#form_gtc").submit() 
     });
-    $("#form_logo, #form_gtc, #form_ipid").submit(function(e) {
+    $("#form_logo, #form_gtc").submit(function(e) {
         $('.loadingSymbol').toggle();
         e.preventDefault(); // prevents page reloading on submitting
         ajaxUploadProductDocuments(new FormData(this)); 
@@ -31,7 +39,7 @@ $(document).ready(function() {
         var form = new FormData(this)
         ajaxUpdateProductSetup(new FormData(this));
     })
-    $("#tableMaxAge, #tableBMI, #tableBaseRates, #tableSumInsured").find("input").focusout(function(){
+    $("#tableMaxAge, #tableBMI, #tableBaseRates, #tableSumInsured, #tablePolicyParams").find("input").focusout(function(){
         var tariffTableId = $(this).closest('table').attr('id');
         var parameter = $(this, 'input').attr('id')
         var inputValue = $(this, 'input').val()

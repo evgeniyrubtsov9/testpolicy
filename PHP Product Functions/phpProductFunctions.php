@@ -101,7 +101,6 @@
                         if($tariffChangeDetails[2] >= 0 && $tariffChangeDetails[2] <= 3 
                             && ($tariffChangeDetails[3] == 'first' || $tariffChangeDetails[3] == 'second')){
                                 $id = ($tariffChangeDetails[2] == 0 || $tariffChangeDetails[2] == 1) ? 0 : 1;
-                                //exit('Id: ' . $id);
                                 $param = $tariffChangeDetails[3] == 'first' ? 'Minimal Age' : 'Maximal Age';
                                 $validationPassed = true;
                                 $oppositeParam = $param == 'Minimal Age' ? 'value_second' : 'value_first';
@@ -239,6 +238,24 @@
                             scriptLog($connection, $processName, getLoggedInUsername($connection), 'Failed to update tariff: <b>'.$tariffName.'</b>. Reason: '.getReturnMessage('dbError'));
                             exit(getReturnMessage('dbError')); 
                         }
+                    }
+                    case 'PolicyParams': {
+                        $id = $tariffChangeDetails[2] >= 0 && $tariffChangeDetails[2] <= 1 ? 1 : 2;
+                        $param = $tariffChangeDetails[3];
+                        $sqlCheckCurrentValue = $connection->query("select value_$param from tariff_sport_smoker where id = $id and value_$param = $newValue");
+                        if($sqlCheckCurrentValue->num_rows != 0) exit('value-was-not-changed');
+                        $sqlGetCurrentValues = $connection->query("select value_$param from tariff_sport_smoker where id=$id");
+                        if($sqlGetCurrentValues->num_rows > 0){
+                            $row = $sqlGetCurrentValues->fetch_assoc();
+                            $currentValue = $row['value_'.$param];
+                        }
+                        $sqlUpdateTariffSportSmoker = $connection->query("update tariff_sport_smoker set value_$param = $newValue where id = $id");
+                        if($sqlUpdateTariffSportSmoker){
+                            scriptLog($connection, $processName, getLoggedInUsername($connection), "User updated value: <b>$currentValue</b> with the new value: <b>$newValue</b> in tariff: <b>$tariffName</b>");
+                            exit(getReturnMessage('success'));
+                        }
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), 'Failed to update tariff: <b>'.$tariffName.'</b>. Reason: <b>'.getReturnMessage('dbError').'</b>');
+                        exit(getReturnMessage('dbError')); 
                     }
                     default: {
                         scriptLog($connection, $processName, getLoggedInUsername($connection), 'Failed to update: <b>'.$tariffName.'</b>. Reason: <b>ERROR tariff table not found</b>');

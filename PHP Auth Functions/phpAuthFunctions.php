@@ -185,7 +185,7 @@
     }
     /**
      * @param $connection - mysqli database connection
-     * Function calls all authentication function
+     * Function calls all authentication functions
      */
     function invokeAuthenticationFunctions($connection){
         $processName = 'AUTHENTICATION';

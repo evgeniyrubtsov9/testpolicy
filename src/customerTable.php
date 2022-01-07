@@ -34,7 +34,7 @@
                     <th>Country</th>
                     <th>Gender</th>
                     <th>Status</th>
-                    <th>Notes</th>
+                    <th>ID №</th>
                     <th id='thAction'>Action</th>
                 </tr>
             </thead>

@@ -141,3 +141,6 @@ table.table td .add {
 #custReturnMsg {
     color: red;
 }
+#loggedInUser:hover {
+    cursor: pointer;
+}
