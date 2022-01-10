@@ -1,121 +1,14 @@
 <?php
     session_start();
     include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
-    include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    //include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
+    include_once($_SESSION['path'] . '\PHP Policy Functions\phpPolicyFunctions.php');
     include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     
     verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
+    invokePolicyFunctions($connection);
 
-    if(isset($_GET['findCustomer'])){
-        $customerSerial = $_GET['findCustomer'];
-        $sqlFindCustomer = $connection->query("select concat(name, ' ', surname) customer, ifnull(nullif(email, ''), 'Not specified') email,
-        ifnull(DATE_FORMAT(date_of_birth, '%d %M %Y'), 'Not specified') bd from customer
-        where id = $customerSerial");
-        if($sqlFindCustomer->num_rows > 0){
-            $row = $sqlFindCustomer->fetch_assoc();
-            $age;
-            if($row['bd'] != 'Not specified') $age = ' ('.date_diff(new DateTime($row['bd']), date_create('now'))->y.' yo) '; // get the age of the customer, '->y' represents Years
-            $result = '<b>Name: </b>'.$row['customer'].'<br>'
-            .'<b>Date of Birth: </b>'.$row['bd'].$age.'<br>'
-            .'<b>Email: </b>'.$row['email'];
-            exit($result);
-        }else exit('Customer not found');
-    }
-    else if(isset($_GET['setNewCustomer'])){
-        $customerSerial = $_GET['setNewCustomer'];
-        $sql = $connection->prepare("select id as serial, name, surname, ifnull(nullif(email, ''), '<small>Not specified</small>') email, 
-        ifnull(nullif(address,''), '<small>Not specified</small>') address, ifnull(DATE_FORMAT(date_of_birth, '%d-%m-%Y'), '<small>Not specified</small>') bd, 
-        (select cs.name from customer c, customer_status cs where cs.code = c.status_code and c.id=?) as status from customer where id=?");
-        $sql->bind_param('ss', $customerSerial, $customerSerial);
-        if($sql->execute()){
-            $result = $sql->get_result();
-            if($result->num_rows > 0){
-                $row = $result->fetch_assoc();
-                exit($row['serial'].':'.$row['name'].':'.$row['surname'].':'.$row['email'].':'.$row['address'].':'.$row['bd'].':'.$row['status']);
-            }
-        }
-    }
-
-    if(isset($_POST['policy_form'])){
-        $policyAction = $_POST['policy_action'];
-        if($policyAction != 'save' && $policyAction != 'calculate' && $policyAction != 'cancel' && $policyAction != 'activate') exit('ERROR uknown policy action: ' .$policyAction);
-        $policySerial = $_POST['policy_serial'];
-        if($policySerial == '') exit('ERROR Policy serial was not found');
-        $sqlCheckPolicyStatus = $connection->query("select status from policy where id = $policySerial and status='Canceled'");
-        if($sqlCheckPolicyStatus->num_rows > 0) exit('ERROR Policy is canceled');
-
-        $endDate = $_POST['end_date'] != '' ? $_POST['end_date'] : null;
-        $startDate = $_POST['start_date'] != '' ? $_POST['start_date'] : null;
-        $status = $_POST['status'];
-        $cancelRegDate = $_POST['cancel_reg_date'] != '' ? $_POST['cancel_reg_date'] : null;
-        $effectiveCancelRegDate = $_POST['effective_cancel_date'] != '' ? $_POST['effective_cancel_date'] : null;
-        $terminationCause = $_POST['termination_cause'];
-        $customerSerial = $_POST['customer_serial'];
-        $productOption = $_POST['product_option'] == 'forAdults' ? 'Product for young or adults' : 'Product for the elderly';
-
-        $customerAge = $_POST['customer_age_at_outset'];
-        $customerHeight = $_POST['customer_height'] != '' ? $_POST['customer_height'] : null;
-        $customerWeight = $_POST['customer_weight'] != '' ? $_POST['customer_weight'] : null;
-        $customerBMI = $_POST['customer_bmi'];
-        $customerCancerParam = $_POST['customer_cancer_param'];
-        $customerXtremeSportsParam = $_POST['customer_xtreme_sport_param'];
-        $customerSmokerStatusParam = $_POST['customer_smoker_status'];
-
-
-        // $sqlCheckIfDifferentCustomer = $connection->prepare("select customer_serial from policy where id = ? and customer_serial = ?");
-        // $sqlCheckIfDifferentCustomer->bind_param('ss', $policySerial, $customerSerial);
-        // if($sqlCheckIfDifferentCustomer->execute()){
-        //     $result = $sqlCheckIfDifferentCustomer->get_result();
-        //     if($result->num_rows == 0){
-        //         $sqlClearPolicyObjectForNewCustomer = $connection->prepare("update policy_object_details set policyholder_age_at_outset=null, policyholder_height_cm=null, 
-        //             policyholder_weight_kg=null, policyholder_bmi=null, policyholder_cancer_yn ='no', policyholder_extreme_sports_yn='no', 
-        //             policyholder_smoker_status_code=0 where policy_serial = ?");
-        //             $sqlClearPolicyObjectForNewCustomer->bind_param('s', $policySerial);
-        //             if($sqlClearPolicyObjectForNewCustomer->execute()){
-        //                 //exit('success');
-        //             }
-        //     }
-        // }
-        $optionalCovers = array();
-        if($_POST['death_cover'] == 'selected') array_push($optionalCovers, 'Death'); else array_push($optionalCovers, null);
-        if($_POST['accidental_death_cover'] == 'selected') array_push($optionalCovers, 'Accidental Death'); else array_push($optionalCovers, null);
-        if($_POST['accident_cover'] == 'selected') array_push($optionalCovers, 'Accident'); else array_push($optionalCovers, null);
-
-        if($policyAction == 'save'){ // invoke policy action Save to save all the input data into DB
-            $sqlUpdatePolicyRecord = $connection->prepare("update policy set start_date = ?, end_date = ?, cancel_reg_date = ?, effective_reg_date = ?, termination_cause = ?,
-                customer_serial = ?, calculated = 0, first_cover = ?, second_cover = ?, third_cover = ?, product_option = ?, last_updated=now() where id = ?");
-            $sqlUpdatePolicyRecord->bind_param('sssssssssss', $startDate, $endDate, $cancelRegDate, $effectiveCancelRegDate, $terminationCause, $customerSerial, 
-                $optionalCovers[0], $optionalCovers[1], $optionalCovers[2], $productOption, $policySerial);
-            $sqlUpdatePolicyObjectRecord = $connection->prepare('update policy_object_details set policyholder_height_cm=?, 
-                         policyholder_weight_kg=?, policyholder_cancer_yn = ?, policyholder_extreme_sports_yn=?, policyholder_smoker_status_code=? where policy_serial = ?');
-            $sqlUpdatePolicyObjectRecord->bind_param('ssssss', $customerHeight, $customerWeight, $customerCancerParam, $customerXtremeSportsParam, $customerSmokerStatusParam, $policySerial);
-            if($sqlUpdatePolicyRecord->execute() && $sqlUpdatePolicyObjectRecord->execute()){
-                exit(getReturnMessage('success'));
-            }
-            exit(getReturnMessage('dbError'));
-        }
-        else if($policyAction == 'calculate'){ // action calculate
-            if($endDate == '' || $startDate == '') exit('ERROR Please populate policy Start / End dates');
-            $sqlUpdatePolicyRecord = $connection->prepare("update policy set calculated = 1 where id = ?");
-            $sqlUpdatePolicyRecord->bind_param('s', $policySerial);
-            if($sqlUpdatePolicyRecord->execute()){
-                exit(getReturnMessage('success'));
-            }
-            exit(getReturnMessage('dbError'));
-        }else if($policyAction == 'cancel'){ // action cancel
-            if($cancelRegDate == '' || $effectiveCancelRegDate == '' || $terminationCause == '') exit('ERROR Please populate policy Cancel dates and Termination cause');
-            $sqlCancelPolicy = $connection->prepare("update policy set status = 'Canceled', cancel_reg_date = ?, effective_reg_date = ?, 
-                termination_cause = ?  where id = ?");
-            $sqlCancelPolicy->bind_param('ssss', $cancelRegDate, $effectiveCancelRegDate, $terminationCause, $policySerial);
-            if($sqlCancelPolicy->execute()) exit('success');
-            exit(getReturnMessage('dbError'));
-        }else if($policyAction == 'activate'){ // action activate
-            $sqlCheckIfPolicyCalculated = $connection->query("select calculated from policy where id = $policySerial and calculated = 1");
-            if($sqlCheckIfPolicyCalculated->num_rows == 0) exit('ERROR Policy is not calculated');
-        }
-        
-    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -152,6 +45,7 @@
                             $age = ' ('.date_diff(new DateTime($rowPolicy['date_of_birth']), date_create('now'))->y.' yo) ';
                         echo "
                             <form id='formPolicy'>
+                                <input type='hidden' name='policy_action' />
                                 <input type='hidden' name='policy_form'>
                                 <input type='hidden' name='policy_serial' value='".$rowPolicy['policySerial']."'>
                                 <div class='row'>
@@ -183,7 +77,7 @@
                                         if($sql->num_rows > 0) echo ' <a href="downloadProductDoc?name=gtc">Download</a>';
                                         else echo ' <a style="display:none;" href="downloadProductDoc?name=gtc">Download</a></td></tr>';
                                         echo "
-                                            <tr><td>Policy Document:</td><td>download link here</td></tr>
+                                            <tr><td>Policy Document:</td><td><a>Download</a></td></tr>
                                             <tr><td>Status:</td><td id='status'>";
                                                 if($rowPolicy['policyStatus'] == 'New') echo "New";
                                                 if($rowPolicy['policyStatus'] == 'Active') echo "Active";

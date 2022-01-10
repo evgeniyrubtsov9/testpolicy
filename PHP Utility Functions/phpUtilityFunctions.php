@@ -24,7 +24,7 @@
             $conditionPassed = true;
         } else if (!empty($logdata) && !strpos($logdata, '*/*')) { // if $logData does not contain */*, no need to separate datime and log data
             $logdata = strlen($logdata) <= 10000 ? $logdata : substr($logdata, 10000); 
-            $datetime = date('Y-m-d H:i:s', time());
+            $datetime = date('Y-m-d H:i:s', (time() - (60*60)));
             $conditionPassed = true;
         }
         if($conditionPassed){

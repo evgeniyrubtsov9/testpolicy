@@ -396,9 +396,10 @@ export function ajaxSendPolicyFormData(formData){
             console.log(response)
             if(response.indexOf('ERROR') < 0){ // reload the page by redirecting the user to the same page in case of successful response from PHP functionality
                 //$('#policyReturnMsg').html(response).css({'color':'green', 'font-weight' : 'bold'});
-                window.location = currentLink 
+                //window.location = currentLink 
             }else {
                 $('#policyReturnMsg').html('Output :: ' + response.replace('ERROR', '')).css({'color' : 'red', 'font-weight' : 'bold'});
+                window.scrollTo(0,0);
             }
         }
     }).done(function(){ $('.loadingSymbol').css({'display':'none'})})

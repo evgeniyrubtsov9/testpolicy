@@ -48,7 +48,7 @@ $(document).ready(function() {
     }
     $('#policySave, #policyCalculate, #policyCancel, #policyActivate').on('click', function() {
         var action = $(this).attr('id').replace('policy', '').toLowerCase()
-        $('#formPolicy').prepend('<input type="hidden" name="policy_action" value="'+action+'"/>');
+        $('#formPolicy input[name="policy_action"]').val(action);
         $('#formPolicy').submit();
     })
     $('#formPolicy').submit(function(event) {

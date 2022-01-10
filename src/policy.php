@@ -71,7 +71,7 @@
                                     <td>".$row['end_date']."</td>
                                     <td>".$row['status']."</td>
                                     <td>".$row['created']."</td>
-                                    <td><a href='user?name=".$row['created_by']."'>".$row['created_by']."</a></td>
+                                    <td>".$row['created_by']."</td>
                                     <td>".number_format($row['total_premium'],2, '.', '').' '.$row['currency']."</td>
                                 </tr>
                                 ";

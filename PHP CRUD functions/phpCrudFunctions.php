@@ -54,6 +54,7 @@
         else {
             switch($key){
                 case 'add':{
+                    //exit('ERROR'.$name. $surname. $email. $address. $dateOfBirth. $countryCode. $gender. $status_code. $responsibleUser. $flextext1);
                     $sql= "insert into customer (name, surname, email, address, date_of_birth, country_code, gender, status_code, created_by, flex_text_1) 
                                 values (?, ?, ?, ?, str_to_date(?, '%Y-%m-%d'), ?, ?, ?, ?, ?)";
                     $sqlAddCustomer = $connection->prepare($sql);
