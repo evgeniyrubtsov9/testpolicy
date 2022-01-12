@@ -363,25 +363,39 @@ export function ajaxFindCustomerBySerial(customerSerial){
     })
 }
 
-export function ajaxUpdateCustomerOnCurrentPolicy(customerSerial){
-    $.ajax({
-        url: currentLink, method: 'GET', data: { setNewCustomer: customerSerial},
-        success: function(response){
-            if(response.indexOf('ERROR') < 0){
-                var customerDetails = response.split(':');
-                customerDetails[0] = customerDetails[0].trim()
-                $('#custSerial').val(customerDetails[0])
-                $('#custName').html(customerDetails[1])
-                $('#custSurname').html(customerDetails[2])
-                $('#custEmail').html(customerDetails[3])
-                $('#custAddress').html(customerDetails[4])
-                $('#custBirthdate').html(customerDetails[5].indexOf('00-00') < 0 ? customerDetails[5] + ' (' + calculateAge(new Date(customerDetails[5].split("-").reverse().join("-"))) + ' yo)' 
-                    : '<small>Not specified</small>')
-                $('#custStatus').html(customerDetails[6] == 'Blacklisted' ? '<b style="color: red;">Blacklisted</b>' : customerDetails[6])
-                $('#customerDialogMsg').html('Save policy in order to change the policyholder!').css({'color' : 'red', 'text-align' : 'center'})
-            }else alert('ajaxUpdateCustomerOnPolicy error')
-        }
-    })
+export function ajaxUpdateCustomerOnCurrentPolicy(customerSerial, policyExistsFlag){
+    if(policyExistsFlag){
+        $.ajax({
+            url: currentLink, method: 'GET', data: { setNewCustomer: customerSerial},
+            success: function(response){
+                if(response.indexOf('ERROR') < 0){
+                    var customerDetails = response.split(':');
+                    customerDetails[0] = customerDetails[0].trim()
+                    $('#custSerial').val(customerDetails[0])
+                    $('#custName').html(customerDetails[1])
+                    $('#custSurname').html(customerDetails[2])
+                    $('#custEmail').html(customerDetails[3])
+                    $('#custAddress').html(customerDetails[4])
+                    $('#custBirthdate').html(customerDetails[5].indexOf('00-00') < 0 ? customerDetails[5] + ' (' + calculateAge(new Date(customerDetails[5].split("-").reverse().join("-"))) + ' yo)' 
+                        : '<small>Not specified</small>')
+                    $('#custStatus').html(customerDetails[6] == 'Blacklisted' ? '<b style="color: red;">Blacklisted</b>' : customerDetails[6])
+                    $('#customerDialogMsg').html('Save policy in order to change the policyholder!').css({'color' : 'red', 'text-align' : 'center'})
+                }else alert('ajaxUpdateCustomerOnPolicy error')
+            }
+        })
+    } else {
+        $.ajax({
+            url: currentLink, method: 'GET', data: { setNewCustomer: customerSerial},
+            success: function(response){
+                if(response.indexOf('ERROR') < 0){
+                    var customerDetails = response.split(':');
+                    customerDetails[0] = customerDetails[0].trim()
+                    var customer = customerDetails[0] + ' '+ customerDetails[1] +' '+ customerDetails[2]
+                    $('#customer').html(customer);
+                }else alert('ajaxUpdateCustomerOnPolicy error')
+            }
+        })
+    }
 }
 /**
  * @param {formData} formData - policy submit form data
@@ -396,8 +410,9 @@ export function ajaxSendPolicyFormData(formData){
             console.log(response)
             if(response.indexOf('ERROR') < 0){ // reload the page by redirecting the user to the same page in case of successful response from PHP functionality
                 //$('#policyReturnMsg').html(response).css({'color':'green', 'font-weight' : 'bold'});
-                //window.location = currentLink 
-            }else {
+                if(response.indexOf('policy_created') >= 0) window.location = 'policyView?serial=' + response.split(' ')[1];
+                else window.location = currentLink 
+            }else if (currentLink != 'createNewPolicy'){
                 $('#policyReturnMsg').html('Output :: ' + response.replace('ERROR', '')).css({'color' : 'red', 'font-weight' : 'bold'});
                 window.scrollTo(0,0);
             }

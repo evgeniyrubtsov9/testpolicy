@@ -1,4 +1,8 @@
 <?php
+if(!isset($_SESSION['loggedIn'])) {
+    header('Location: auth');
+    exit();
+}
 $policySerial = $_GET['policySerial'];
 if($policySerial != null){
     require('fpdf.php');
@@ -11,20 +15,16 @@ if($policySerial != null){
     $sqlGetPolicyDetails->bind_param('ss', $policySerial, $policySerial);
     $sqlGetPolicyDetails->execute();
     $sqlResult = $sqlGetPolicyDetails->get_result();
-    while($row = $sqlResult->fetch_assoc()){
+    while($row = $sqlResult->fetch_assoc()){ 
         $productName = $row['name'];
         $productDescription = $row['commercial_description'];
-
         $policyStartDate = $row['start_date'];
         $policyEndDate = $row['end_date'];
-
         $customerData = $row['customer_data'];
         $customerNameSurname = preg_split('~-~', $customerData)[0];
         $customerId = preg_split('~-~', $customerData)[1];
-
         $calculationSteps = $row['calculation_steps'];
         $totalPremium = $row['total_premium'] . ' '. $row['currency'];
-
         $bmi = $row['bmi'];
         $sport = $row['sport'];
         $smoker = $row['smoker'];
@@ -32,30 +32,16 @@ if($policySerial != null){
     $calculationSteps = str_replace('<b>', '', $calculationSteps);
     $calculationSteps = str_replace('</b>', '', $calculationSteps);
     $calculationSteps = str_replace('<br>', "\n", $calculationSteps);
-    //exit($productName. ' '. $productDescription.$policyStartDate.$policyEndtDate.$customerData.$customerNameSurname.$customerId.$calculationSteps.$totalPremium);
-
-    //create a FPDF object
     $pdf=new FPDF();
-
-    //set document properties
-    $pdf->SetAuthor('TestPolicy');
+    $pdf->SetAuthor('TestPolicy'); //set document properties
     $pdf->SetTitle('Policy Document ' .$policySerial);
-
-    //set font for the entire document
-    $pdf->SetFont('Helvetica','B',20);
+    $pdf->SetFont('Helvetica','B',20); //set font for the entire document
     $pdf->SetTextColor(0, 0, 0);
-
-    //set up a page
-    $pdf->AddPage('P');
-    $pdf->SetDisplayMode(real, 'default');
-
-    //insert an image and make it a lin
-
-    //display the title with a border around it
+    $pdf->AddPage('P'); //set up a page
+    $pdf->SetDisplayMode(real, 'default'); //display the title with a border around it
     $pdf->SetXY(50,20);
     $pdf->SetDrawColor(50,60,100);
     $pdf->Cell(100,10, $productDescription, 0, 0, 'C', 0);
-
     //Set x and y position for the main text, reduce font size and write content
     $pdf->SetXY (10,50);
     $pdf->SetFontSize(14);
@@ -90,24 +76,17 @@ if($policySerial != null){
     $pdf->Write(5, "Smoker status: ");
     $pdf->SetFont('Helvetica','I');
     $pdf->Write(5, "$smoker \n");
-
     $pdf->SetFont('Helvetica','B');
     $pdf->Write(5, "Premium Calculation: \n\n");
     $pdf->SetFont('Helvetica','I');
     $pdf->Write(5, "$calculationSteps \n\n");
-
     $pdf->SetFont('Helvetica','B');
     $pdf->Write(5, "Total Premium: ");
     $pdf->SetFont('Helvetica','I');
     $pdf->Write(5, "$totalPremium \n");
-
-
-    //Output the document
     $policyDocumentName = "TestPolicy_$policySerial.pdf";
-    $content = $pdf->Output($policyDocumentName,'S');
+    $content = $pdf->Output($policyDocumentName, 'S'); // Save the document in the database (flag S)
     $sql = "insert into policy_document(policy_serial, content, name, type, size) values('$policySerial', '".addslashes($content)."', '$policyDocumentName', '-', '-')";
     $connection->query($sql);
-    //$sql = "update policy_document set policy_serial = 9999999, content = '".addslashes($content)."', name='$policyDocumentName', type = '2', size='1'";
-    //$connection->query($sql);
 }
 ?>

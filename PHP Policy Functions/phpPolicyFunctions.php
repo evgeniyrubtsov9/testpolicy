@@ -250,15 +250,16 @@
                         $sqlCancelPolicy->bind_param('ssss', $cancelRegDate, $effectiveCancelRegDate, $terminationCause, $policySerial);
                         if($sqlCancelPolicy->execute()) {
                             // here need to send appropriate policy doc from policy_document + product logo
-                            
-                            // subject: TestPolicy CANCELLATION – [polises ID]
-                            // body:
-                            // Dear [polises apdrošināšanas ņēmēja vārds],
-                            // Your policy № [polises ID] was cancelled.
-                            // Cancellation reason: [polises anulēšanas iemesls]
-                            // Respectfully yours,
-                            // TestPolicy
-
+                            $result = sendPolicyDocumentToUserEmail($connection, 'cancel', $policySerial, null, null);
+                            if($result){
+                                $sqlPolicyHolderEmail = $connection->query("select (select email from customer where id = customer_serial) email from policy");
+                                $email = $sqlPolicyHolderEmail->fetch_assoc()['email'];
+                                scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned SUCCESS. Policy was activated");
+                                scriptLog($connection, $processName, getLoggedInUsername($connection), "Email sent to policyholder: <b>$email</b>");
+                            } else {
+                                scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned SUCCESS. Policy was activated'");
+                                scriptLog($connection, $processName, getLoggedInUsername($connection), "Email NOT sent to policyholder - empty email");
+                            }
                             exit('success');
                         }
                         scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned: ".getReturnMessage('dbError'));
@@ -271,6 +272,7 @@
                 scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned: Severe issue! ".getReturnMessage('dbError'));
                 exit('Severe issue!'.getReturnMessage('dbError'));
             }else if($policyAction == 'activate'){ // action activate
+                $processName = 'POLICY ACTIVATE';
                 $sqlValidatePolicyInStatusNew = $connection->query("select id from policy where id = $policySerial and status = 'New'");
                 if($sqlValidatePolicyInStatusNew->num_rows == 0) {
                     scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned: Policy must have status of 'New'");
@@ -290,11 +292,12 @@
                         $sqlPolicyHolderEmail = $connection->query("select (select email from customer where id = customer_serial) email from policy");
                         $email = $sqlPolicyHolderEmail->fetch_assoc()['email'];
                         scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned SUCCESS. Policy was activated");
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy Document was created and sent to policyholder email: <b>$email</b>");
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy Document was created. Email sent to policyholder: <b>$email</b>");
                     } else {
                         scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned SUCCESS. Policy was activated'");
-                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy Document was NOT sent to policyholder - empty email");
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Email NOT sent to policyholder - empty email");
                     }
+                    exit('success');
                 }
             }
         }

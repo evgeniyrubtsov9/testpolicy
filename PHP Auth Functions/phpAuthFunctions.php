@@ -140,11 +140,12 @@
     }
     function sendPolicyDocumentToUserEmail($connection, $action, $policySerial, $startDate, $endDate){
         $sqlGetPolicyDetails = $connection->query("select (select email from customer where id = customer_serial) email,
-            (select name from customer where id = customer_serial) customer_name from policy where id = '$policySerial'");
+            (select name from customer where id = customer_serial) customer_name, termination_cause from policy where id = '$policySerial'");
         $result = $sqlGetPolicyDetails->fetch_assoc();
         $emailTo = $result['email'];
         if($emailTo == '') return false;
         $customerName = $result['customer_name'];
+        $terminationCause = $result['termination_cause'];
         $startDate = date_create($startDate);
         $endDate = date_create($endDate);
         $startDate = date_format($startDate, "d.m.Y");
@@ -200,17 +201,30 @@
             $mail->setFrom('ludf.kvalifikacijasdarbs@gmail.com', 'TestPolicy');
             $mail->addAddress($emailTo);
             $mail->Subject = "TestPolicy CANCELLATION - Policy #$policySerial";
-            $mail->Body    = "Dear $customerName,<br>
-            Your policy № [polises ID] was cancelled.
-            // Cancellation reason: [polises anulēšanas iemesls]
-            // Respectfully yours,
-            // TestPolicy";
-            $mail->AltBody = "We are glad to inform you that your policy №<b>$policySerial</b> was activated. The policy is active from <b>$startDate</b> 
-                (including) until <b>$endDate</b> (including)!<br><br>Respectfully yours,<br>TestPolicy."; // body in plain text for non-HTML mail clients
+            $mail->Body    = "Dear $customerName,<br>Your policy №<b>$policySerial</b> was cancelled. Cancellation reason: <b><i>$terminationCause</i></b><br><br>
+            Respectfully yours,
+            TestPolicy";
+            $mail->AltBody = "Dear $customerName,<br>Your policy №<b>$policySerial</b> was cancelled. Cancellation reason: <b><i>$terminationCause</i></b><br>
+            Respectfully yours,
+            TestPolicy"; // body in plain text for non-HTML mail clients
             $productLogo = $connection->query("select name, content from files_data where name like 'logo%'");
-            $productGtc = $connection->query("select name, content from files_data where name like 'gtc%'");
             $policyDocument = $connection->query("select name, content from policy_document where policy_serial = '$policySerial'");     
+            if($productLogo->num_rows > 0){
+                $row = $productLogo->fetch_assoc();
+                $logo = $row['content'];
+                $ext = pathinfo($row['name'], PATHINFO_EXTENSION);
+                $mail->addStringAttachment($logo , 'TestPolicyLogo.'.$ext);
+            }
+            if($policyDocument->num_rows > 0){
+                $row = $policyDocument->fetch_assoc();
+                $policyDocument = $row['content'];
+                $ext = pathinfo($row['name'], PATHINFO_EXTENSION);
+                $mail->addStringAttachment($policyDocument , 'Policy_Document.'.$ext);
+            }
+            $result = $mail->send();
+            return $result;
         }
+        return false;
     }
     /**
      * @param $connection - mysqli db connection

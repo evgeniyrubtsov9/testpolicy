@@ -1,26 +1,15 @@
 import { ajaxFindCustomerBySerial, ajaxUpdateCustomerOnCurrentPolicy, ajaxUpdateUserProfile, ajaxLogResult, ajaxSendPolicyFormData, ajaxRetrieveSelectedUser } from "./JS Ajax Functions.js";
 import { loggedInUser } from "./JS Customer Functions.js";
-import { isNullSafe, dateToFormatDayMonthYear } from "./JS Utility Functions.js";
+import { isNullSafe, dateToFormatDayMonthYear, currentLink } from "./JS Utility Functions.js";
 $(document).ready(function() {
     $('#policies').DataTable({ // use data table plugin to create 'beautiful' table with the search option
         paging : true, // pagination off
         ordering : false, // ordering off
     })
-    // $('#loggedInUser').on('click', function() {
-    //     ajaxRetrieveSelectedUser($(this, '#loggedInUser').html().trim()) 
-    // })
-    // $('#user_form').submit(function(event){ // prevent page reloading and run the function on form submit 
-    //     event.preventDefault();
-    //     var customerForm = new FormData(this)
-    //     ajaxUpdateUserProfile(customerForm);
-    // })
-    // $('update_user').on('click', function(){
-    //     $('#user_form').submit();
-    // })
     $('#addNewPolicy').on('click', function(){window.location='createNewPolicy'})
-    $('#policyTermCause').focus(function () {
+    $('#policyTermCause').on('mouseover', function () {
         $(this).animate({ height: "300px"}, 200);
-    }).focusout(function () {
+    }).on('mouseout', function () {
         $(this).animate({ height: "25px", width: "250px" }, 200);
     });
     $(function() {
@@ -40,15 +29,28 @@ $(document).ready(function() {
         var customerSerial = $('#customerDialog > input').val();
         var policySerial = $('#policySerial').html()
         console.log('Set customer : ' + customerSerial + ' for policy: ' + policySerial)
-        ajaxUpdateCustomerOnCurrentPolicy(customerSerial)
+        if(currentLink == 'createNewPolicy') ajaxUpdateCustomerOnCurrentPolicy(customerSerial, false);
+        else ajaxUpdateCustomerOnCurrentPolicy(customerSerial, true);
     })
     if($('#status').html() == 'Canceled' || $('#status').html() == 'Active') {
         $(document).find('input, select').attr('readonly', 'readonly');
         $(document).find('textarea').attr('readonly', 'readonly');
+        if($('#status').html() == 'Active'){
+            $(document).find('input[name="cancel_reg_date"]').attr('readonly', false);
+            $(document).find('input[name="effective_cancel_date"]').attr('readonly', false);
+            $(document).find('textarea[name="termination_cause"]').attr('readonly', false);
+        }
     }
-    $('#policySave, #policyCalculate, #policyCancel, #policyActivate').on('click', function() {
+    $('#policySave, #policyCalculate, #policyCancel, #policyActivate, #policyCreate').on('click', function() {
         var action = $(this).attr('id').replace('policy', '').toLowerCase()
         $('#formPolicy input[name="policy_action"]').val(action);
+        if(action == 'create') {
+            if(!isNullSafe($('#customer').html())) $('#policyReturnMsg').html('Please populate the customer!');
+            else {
+                $('#policyReturnMsg').html(null);
+                $('#formPolicy input[name="customer"]').val($('#customer').html());
+            }
+        }
         $('#formPolicy').submit();
     })
     $('#formPolicy').submit(function(event) {

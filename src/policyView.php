@@ -10,6 +10,7 @@
     include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
     invokeUtilityFunctions($connection);
     invokePolicyFunctions($connection);
+    var_dump($_SESSION);
 
 ?>
 <!DOCTYPE html>
