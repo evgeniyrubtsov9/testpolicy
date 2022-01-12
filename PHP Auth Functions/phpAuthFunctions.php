@@ -138,6 +138,80 @@
         $result = $mail->send();
         return $result;
     }
+    function sendPolicyDocumentToUserEmail($connection, $action, $policySerial, $startDate, $endDate){
+        $sqlGetPolicyDetails = $connection->query("select (select email from customer where id = customer_serial) email,
+            (select name from customer where id = customer_serial) customer_name from policy where id = '$policySerial'");
+        $result = $sqlGetPolicyDetails->fetch_assoc();
+        $emailTo = $result['email'];
+        if($emailTo == '') return false;
+        $customerName = $result['customer_name'];
+        $startDate = date_create($startDate);
+        $endDate = date_create($endDate);
+        $startDate = date_format($startDate, "d.m.Y");
+        $endDate = date_format($endDate, "d.m.Y");
+        if($action == 'activate'){
+            $mail = new PHPMailer(true); //Passing `true` enables PHPMailer exceptions
+            $mail->isHTML(true);  //Set email format to HTML
+            $mail->isSMTP(); // use SMTP protocol to send email
+            $mail->Host = 'smtp.gmail.com'; // using gmail stmp server
+            $mail->SMTPAuth = true; 
+            $mail->Port = 587;
+            $mail->Username = 'ludf.kvalifikacijasdarbs@gmail.com';
+            $mail->Password = 'Italian1009';
+            $mail->setFrom('ludf.kvalifikacijasdarbs@gmail.com', 'TestPolicy');
+            $mail->addAddress($emailTo);
+            $mail->Subject = "TestPolicy Activation - Policy #$policySerial";        
+            $mail->Body    = "Dear $customerName,<br>We are glad to inform you that your policy №<b>$policySerial</b> was activated. The policy is active from <b>$startDate</b> 
+                (including) until <b>$endDate</b> (including)<br><br>Respectfully yours,<br>TestPolicy.";
+            $mail->AltBody = "We are glad to inform you that your policy №<b>$policySerial</b> was activated. The policy is active from <b>$startDate</b> 
+                (including) until <b>$endDate</b> (including)!<br><br>Respectfully yours,<br>TestPolicy."; // body in plain text for non-HTML mail clients
+            $productLogo = $connection->query("select name, content from files_data where name like 'logo%'");
+            $productGtc = $connection->query("select name, content from files_data where name like 'gtc%'");
+            $policyDocument = $connection->query("select name, content from policy_document where policy_serial = '$policySerial'");
+            if($productLogo->num_rows > 0){
+                $row = $productLogo->fetch_assoc();
+                $logo = $row['content'];
+                $ext = pathinfo($row['name'], PATHINFO_EXTENSION);
+                $mail->addStringAttachment($logo , 'TestPolicyLogo.'.$ext);
+            }
+            if($productGtc->num_rows > 0){
+                $row = $productGtc->fetch_assoc();
+                $gtcFile = $row['content'];
+                $ext = pathinfo($row['name'], PATHINFO_EXTENSION);
+                $mail->addStringAttachment($gtcFile , 'General_Terms_and_Conditions.'.$ext);
+            }
+            if($policyDocument->num_rows > 0){
+                $row = $policyDocument->fetch_assoc();
+                $policyDocument = $row['content'];
+                $ext = pathinfo($row['name'], PATHINFO_EXTENSION);
+                $mail->addStringAttachment($policyDocument , 'Policy_Document.'.$ext);
+            }
+            $result = $mail->send();
+            return $result;
+        } else if($action == 'cancel'){
+            $mail = new PHPMailer(true); //Passing `true` enables PHPMailer exceptions
+            $mail->isHTML(true);  //Set email format to HTML
+            $mail->isSMTP(); // use SMTP protocol to send email
+            $mail->Host = 'smtp.gmail.com'; // using gmail stmp server
+            $mail->SMTPAuth = true; 
+            $mail->Port = 587;
+            $mail->Username = 'ludf.kvalifikacijasdarbs@gmail.com';
+            $mail->Password = 'Italian1009';
+            $mail->setFrom('ludf.kvalifikacijasdarbs@gmail.com', 'TestPolicy');
+            $mail->addAddress($emailTo);
+            $mail->Subject = "TestPolicy CANCELLATION - Policy #$policySerial";
+            $mail->Body    = "Dear $customerName,<br>
+            Your policy № [polises ID] was cancelled.
+            // Cancellation reason: [polises anulēšanas iemesls]
+            // Respectfully yours,
+            // TestPolicy";
+            $mail->AltBody = "We are glad to inform you that your policy №<b>$policySerial</b> was activated. The policy is active from <b>$startDate</b> 
+                (including) until <b>$endDate</b> (including)!<br><br>Respectfully yours,<br>TestPolicy."; // body in plain text for non-HTML mail clients
+            $productLogo = $connection->query("select name, content from files_data where name like 'logo%'");
+            $productGtc = $connection->query("select name, content from files_data where name like 'gtc%'");
+            $policyDocument = $connection->query("select name, content from policy_document where policy_serial = '$policySerial'");     
+        }
+    }
     /**
      * @param $connection - mysqli db connection
      * @param $username - user name

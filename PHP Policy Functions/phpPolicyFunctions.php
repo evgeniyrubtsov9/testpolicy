@@ -1,5 +1,6 @@
 <?php 
     include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
+    include_once($_SESSION['path'] . '\PHP Auth Functions\phpAuthFunctions.php');
 
     function invokePolicyFunctions($connection){
         if(isset($_GET['findCustomer'])){
@@ -39,7 +40,7 @@
             $policySerial = $_POST['policy_serial'];
             if($policySerial == '') exit('ERROR Policy serial was not found');
             $sqlCheckPolicyStatus = $connection->query("select status from policy where id = $policySerial and status='Canceled'");
-            if($sqlCheckPolicyStatus->num_rows > 0) exit('ERROR Policy is not active');
+            if($sqlCheckPolicyStatus->num_rows > 0) exit('ERROR Policy is not canceled');
 
             $endDate = $_POST['end_date'] != '' ? $_POST['end_date'] : null;
             $startDate = $_POST['start_date'] != '' ? $_POST['start_date'] : null;
@@ -83,7 +84,7 @@
             }
             else if($policyAction == 'calculate'){ // action calculate
                 $processName = "POLICY CALCULATE";
-                $totalPremiumCalculationSteps = '';
+                
                 // get customer birth date at first
                 $sqlBirthdateAndStatus = $connection->query("select date_of_birth, (select name from customer_status where code = status_code) status from customer where id = $customerSerial");
                 $sqlResult = $sqlBirthdateAndStatus->fetch_assoc();
@@ -161,37 +162,66 @@
                     $sqlSaveBMI->bind_param('ss', $customerBMI, $policySerial);
                     $sqlSaveBMI->execute();
                 }
-
+                // getting product multipliers START
                 $sqlParamSport = $customerXtremeSportsParam == 'yes' ? 'value_first' : 'value_second'; // sql column name according to the selected Extreme sport param on policy 
                 if($customerSmokerStatusParam == '0') $sqlParamSmoker = 'value_first'; // sql column name according to the selected Smoker status param on policy 
                 if($customerSmokerStatusParam == '1') $sqlParamSmoker = 'value_second';
                 if($customerSmokerStatusParam == '2') $sqlParamSmoker = 'value_third';
                 if($customerSmokerStatusParam == '3') $sqlParamSmoker = 'value_fourth';
-                // multiplying according to the BMI tariff and sport & smoker tariff
 
+                $sqlGetBMImultiplier = $connection->query("select value multiplier from tariff_bmi where range_start <= $customerBMI and $customerBMI <= range_end");
+                $sqlGetXtremeSportMultiplier = $connection->query("select $sqlParamSport multiplier from tariff_sport_smoker where name = 'Extreme sports'");
+                $sqlGetSmokerMultiplier = $connection->query("select $sqlParamSmoker multiplier from tariff_sport_smoker where name = 'Smoker status'");
                 
-
-                
-                // then do calculation
-                // BMI calculation + age save in policy_object
-
-                    // final....
-                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned: <b>".getReturnMessage('success')."</b>");
-                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b>. Total Premium = ".$totalPremium);
-                    scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b>. Total Premium Calculation: ".$totalPremiumCalculationSteps);
-                
-                if($policyWasSaved){
-                    $sqlUpdatePolicyRecord = $connection->prepare("update policy set calculated = 1 where id = ?");
-                    $sqlUpdatePolicyRecord->bind_param('s', $policySerial);
-                    if($sqlUpdatePolicyRecord->execute()){
-                        exit(getReturnMessage('success'));
+                $bmiMultiplier = $sqlGetBMImultiplier->fetch_assoc()['multiplier'];
+                $extremeSportsMultiplier = $sqlGetXtremeSportMultiplier->fetch_assoc()['multiplier'];
+                $smokerMultiplier = $sqlGetSmokerMultiplier->fetch_assoc()['multiplier'];
+                // getting product multipliers END
+                $coverAndPrice = array();
+                foreach($coversSelected as $cover){
+                    if($cover != null){
+                        $sqlGetCoverValue = $connection->query("select premium_part name, value price from tariff_base_rates where premium_part = '$cover'");
+                        $sqlResult = $sqlGetCoverValue->fetch_assoc();
+                        array_push($coverAndPrice, $sqlResult['name'], $sqlResult['price']);
                     }
-                    exit(getReturnMessage('dbError'));
+
                 }
-                //
+                // calculation steps
+                $newLineSymbol = "<br>";
+                $totalPremiumCalculationSteps = "BMI multiplier: <b>" . $bmiMultiplier."</b>" . $newLineSymbol;
+                $totalPremiumCalculationSteps .= "Extreme sports multiplier: <b>" . $extremeSportsMultiplier."</b>"  . $newLineSymbol;
+                $totalPremiumCalculationSteps .= "Smoker multiplier: <b>" . $smokerMultiplier ."</b>" . $newLineSymbol;
+                $totalPremiumCalculationSteps .= $newLineSymbol;
+                // START multiplying according to the BMI tariff and sport & smoker tariff 
+                $sum = 0;
+                $totalPremium = 0;
+                for($index = 0; $index < sizeof($coverAndPrice); $index++){ 
+                    if($index % 2 != 0) { // prices
+                        $indexCopy = $index;
+                        $totalPremiumCalculationSteps .= 
+                            $coverAndPrice[--$indexCopy] . ' (cover) = ' . $coverAndPrice[$index] . " * " . $bmiMultiplier . " * " . $extremeSportsMultiplier . " * ". $smokerMultiplier . "\n";
+                        $sum += $coverAndPrice[$index] * $bmiMultiplier * $extremeSportsMultiplier * $smokerMultiplier;
+                        $totalPremiumCalculationSteps .= " = <b>".number_format($sum, 2)."</b> (monthly)" . $newLineSymbol;
+                        $totalPremium += $sum;
+                        $sum = 0;
+                    }
+                }
+                $totalPremium *= $countMonthsBetween; 
+                $totalPremiumCalculationSteps .= $newLineSymbol."Policy Period is <b>$countMonthsBetween</b> month(s)";
+                // END multiplying according to the BMI tariff and sport & smoker tariff start 
+                $sqlSaveTotalPremiumCalc = $connection->query("update policy set total_premium = '$totalPremium', calculation_steps = '$totalPremiumCalculationSteps' where id = $policySerial");
+                scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned: <b>".getReturnMessage('success')."</b>");
+                scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b>. Total Premium = ".$totalPremium);
+                scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b>. Total Premium Calculation: ".$newLineSymbol.$totalPremiumCalculationSteps);
+                $sqlUpdatePolicyRecord = $connection->prepare("update policy set calculated = 1 where id = ?");
+                $sqlUpdatePolicyRecord->bind_param('s', $policySerial);
+                if($sqlUpdatePolicyRecord->execute()){
+                    exit(getReturnMessage('success'));
+                }
                 exit('Severe issue!'.getReturnMessage('dbError'));
 
             }else if($policyAction == 'cancel'){ // action cancel
+                $processName = 'POLICY CANCEL';
                 // saving policy details at first
                 $policyWasSaved = false;
                 $sqlUpdatePolicyRecord = $connection->prepare("update policy set start_date = ?, end_date = ?, cancel_reg_date = ?, effective_reg_date = ?, termination_cause = ?,
@@ -252,18 +282,19 @@
                     exit('ERROR Policy is not calculated'); // valid 2
                 }
                 else {
+                    $_GET['policySerial'] = trim($policySerial); 
+                    require('createPolicyDocument.php'); // create policy document
+                    $result = sendPolicyDocumentToUserEmail($connection, 'activate', $policySerial, $startDate, $endDate); // send policy document + logo + gtc to policyholder 
                     $sqlActivatePolicy = $connection->query("update policy set status = 'Active' where id = $policySerial");
-                    // create policy document and send it to policyholder email + logo + gtc
-                    
-                    // subject: TestPolicy Activation – [polises id]
-                    // body: 
-                    // Dear [polises apdrošināšanas ņēmēja vārds],
-                    // We are glad to inform you that your policy № [polises ID] was activated. The policy is
-                    // active from [polises sākuma datums] (including) until [polises beigu datums]
-                    // (including).
-                    // Respectfully yours,
-                    // TestPolicy
-
+                    if($result){
+                        $sqlPolicyHolderEmail = $connection->query("select (select email from customer where id = customer_serial) email from policy");
+                        $email = $sqlPolicyHolderEmail->fetch_assoc()['email'];
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned SUCCESS. Policy was activated");
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy Document was created and sent to policyholder email: <b>$email</b>");
+                    } else {
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy action: <b>$policyAction</b> returned SUCCESS. Policy was activated'");
+                        scriptLog($connection, $processName, getLoggedInUsername($connection), "Policy Document was NOT sent to policyholder - empty email");
+                    }
                 }
             }
         }

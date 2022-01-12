@@ -4,10 +4,14 @@
      * The page sends excel file with the customer's list to downloading 
      */
     session_start();
+    if(!isset($_SESSION['loggedIn'])){ // If user is already logged in (session variable 'loggedIn' is set up), return the user into the system without asking credentials
+        header('Location: auth');      // otherwise return to auth.php for user to provide credentials at first
+        exit();
+    }
     include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
     include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
     include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
-    verifyIfUserIsLoggedIn();
+    //verifyIfUserIsLoggedIn();
     $fileName = "customers_" . getLoggedInUsername($connection) . "_" . date('Y-m-d H:i:s', time()) . ".xls"; // Excel file name with xls extension for download 
     $fields = array('Serial', 'Name', 'Surname', 'Email', 'Address', 'Date of Birth', 'Country', 'Gender', 'Status', 'Created By', 'Changed By', 'ID #'); // Column names 
     $excelData = implode("\t", array_values($fields)) . "\n"; // Display column names as first row 

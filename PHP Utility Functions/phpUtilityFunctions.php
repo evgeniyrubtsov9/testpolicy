@@ -324,7 +324,7 @@
         fclose($fp);
         $filename = $productDocumentName .'.'. $ext; // always save file with the same name (either 'gtc', or 'ipid', or 'logo' + extension)
         $sqlCheckIfFileAlreadyExists = $connection->query("select name from files_data where name like '".$productDocumentName . "%'");
-        $sql;
+        //$sql;
         $updated = false;
         if($sqlCheckIfFileAlreadyExists->num_rows > 0) { // update current file if it was already present in DB
             $sql = $connection->query("update files_data set name='".$filename."', type='".$fileType."', size='".$filesize."', content='".$content."' where name like '".$productDocumentName . "%'");

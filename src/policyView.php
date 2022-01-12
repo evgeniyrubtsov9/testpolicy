@@ -1,11 +1,13 @@
 <?php
     session_start();
+    if(!isset($_SESSION['loggedIn'])){ // If user is already logged in (session variable 'loggedIn' is set up), return the user into the system without asking credentials
+        header('Location: auth');      // otherwise return to auth.php for user to provide credentials at first
+        exit();
+    }
     include_once($_SESSION['path'] . '\PHP Utility Functions\phpUtilityFunctions.php');
     //include_once($_SESSION['path'] . '\PHP CRUD functions\phpCrudFunctions.php');
     include_once($_SESSION['path'] . '\PHP Policy Functions\phpPolicyFunctions.php');
     include_once('database.php'); // no need for a long path, since database.php is in the same folder as index.php
-    
-    verifyIfUserIsLoggedIn();
     invokeUtilityFunctions($connection);
     invokePolicyFunctions($connection);
 
@@ -35,7 +37,7 @@
             ( SELECT cs.name FROM customer_status cs, customer cust WHERE cs.code = cust.status_code AND cust.id = c.id ) AS status , 
             p.id AS policySerial, p.customer_serial, DATE_FORMAT(p.created, '%d-%m-%Y') created, DATE_FORMAT(p.last_updated, '%d-%m-%Y %h:%i:%s') last_updated, p.total_premium, p.currency, p.product_name, DATE_FORMAT(p.start_date, '%d-%m-%Y') start_date, 
             DATE_FORMAT(p.end_date, '%Y-%m-%d') end_date, DATE_FORMAT(p.start_date, '%Y-%m-%d') start_date, DATE_FORMAT( p.cancel_reg_date, '%Y-%m-%d' ) cancel_reg_date, 
-            DATE_FORMAT( p.effective_reg_date, '%Y-%m-%d' ) effective_reg_date, termination_cause FROM policy p, customer c where p.id = ? and c.id = p.customer_serial");
+            DATE_FORMAT( p.effective_reg_date, '%Y-%m-%d' ) effective_reg_date, calculation_steps, termination_cause FROM policy p, customer c where p.id = ? and c.id = p.customer_serial");
             $sqlGetPolicy->bind_param('s', $policySerial);
             if($sqlGetPolicy->execute()){
                 $result = $sqlGetPolicy->get_result();
@@ -77,7 +79,11 @@
                                         if($sql->num_rows > 0) echo ' <a href="downloadProductDoc?name=gtc">Download</a>';
                                         else echo ' <a style="display:none;" href="downloadProductDoc?name=gtc">Download</a></td></tr>';
                                         echo "
-                                            <tr><td>Policy Document:</td><td><a>Download</a></td></tr>
+                                            <tr><td>Policy Document:</td><td>";
+                                            $sql = $connection->query("select name from policy_document where policy_serial = '$policySerial'");
+                                            if($sql->num_rows > 0) echo "<a href='downloadPolicyDoc?policySerial=$policySerial'>Download</a>";
+                                            else echo "<a style='display: none;' href='downloadPolicyDoc?policySerial=$policySerial'>Download</a>";
+                                        echo "</td></tr>
                                             <tr><td>Status:</td><td id='status'>";
                                                 if($rowPolicy['policyStatus'] == 'New') echo "New";
                                                 if($rowPolicy['policyStatus'] == 'Active') echo "Active";
@@ -115,7 +121,9 @@
                                     <div class='col-sm-3' style='border: 1px dotted black; margin: 0 15px 15px 0'>
                                         <label>Premium calculation steps</label>
                                         <hr>
-                                        ...
+                                        <p>"
+                                        .$rowPolicy['calculation_steps'].  
+                                       "</p>
                                     </div>
                                 </div>";
                                 $sqlGetCustomerDetails = $connection->prepare("select policyholder_age_at_outset age, policyholder_height_cm height, policyholder_weight_kg weight, 
